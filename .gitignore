@@ -1,4 +1,7 @@
 data/
+dev_pred.json
 .venv/
 __pycache__/
 .ipynb_checkpoints/
+submission.json
+dev_score.json
