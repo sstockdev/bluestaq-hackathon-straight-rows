@@ -139,7 +139,7 @@ function panels() {
   const lines = (key) => TR.map((t) => ({ values: s[t][key], color: COLOR[t], bold: t === focus }));
   return [
     { title: "Signal strength", sub: "Mean C/N0 in dB-Hz. Shading is for " + focus + ": amber is the drop the sky explains, red is the drop nothing in the sky explains.",
-      tall: true, lines: lines("cn0"),
+      tall: true, minSpan: 12, lines: lines("cn0"),
       bands: [
         { upper: ep.sag.map(() => base), lower: skyFloor, color: "rgba(224,161,0,0.28)" },
         { upper: skyFloor, lower: now, color: "rgba(194,51,77,0.26)", onlyBelow: true },
@@ -169,6 +169,7 @@ function range(p) {
   (p.marks || []).forEach((m) => see(m.y));
   (p.bands || []).forEach((b) => { b.upper.forEach(see); b.lower.forEach(see); });
   if (p.zero) see(0);
+  if (p.minSpan && hi - lo < p.minSpan) lo = hi - p.minSpan;   // keep ordinary noise from filling the chart
   const pad = (hi - lo || 1) * 0.08;
   return [lo - (p.zero && lo === 0 ? 0 : pad), hi + pad];
 }
