@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useApp } from "../state/store";
-import { endTour, goToStop, openNotes, startTour, tourStartedAt } from "./control";
+import { endTour, goToStop, openReference, openNotes, startTour, tourStartedAt } from "./control";
 import { openTourChannel, type TourMessage } from "./presenter";
 
 /** True when the key press belongs to a field the user is typing in. */
@@ -12,7 +12,8 @@ function isTyping(event: KeyboardEvent): boolean {
 
 /**
  * The guided tour's keys: T starts it at the first stop, N opens the
- * presenter's notes in their own window, P turns presentation mode on and off, the right and left arrows move
+ * presenter's notes and reference in their own windows, C opens the reference
+ * alone, P turns presentation mode on and off, the right and left arrows move
  * between stops, and Escape ends it. While the tour runs, the arrows and
  * Escape go to the tour and nowhere else.
  *
@@ -28,7 +29,11 @@ export function useTour(): void {
       if (event.key === "t" || event.key === "T") {
         startTour();
       } else if (event.key === "n" || event.key === "N") {
+        // A browser may allow only one new window per key press. If the reference is blocked, C opens it.
         openNotes();
+        openReference();
+      } else if (event.key === "c" || event.key === "C") {
+        openReference();
       } else if (event.key === "p" || event.key === "P") {
         useApp.getState().setPresent(!useApp.getState().present);
       } else if (step === null) {

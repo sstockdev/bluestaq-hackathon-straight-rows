@@ -25,7 +25,8 @@ npm run dev                       # http://localhost:5173
 | Left, Right | Move the clock one minute, or ten with Shift |
 | `[`, `]` | Previous or next detection |
 | `T` | Start the eight-stop tour. The arrows move it and Escape ends it |
-| `N` | Open the speaker notes in a second window |
+| `N` | Open the two presenter windows: the speaker notes, and a reference with the five rules, the confidence weights, and the reasons behind the approach and the code |
+| `C` | Open the reference alone, if the browser blocked the second window |
 | `P` | Presentation mode, for a projector. Zoom the browser in afterwards |
 
 ## Code

@@ -25,6 +25,11 @@ export function endTour(): void {
   useApp.getState().setTourStep(null);
 }
 
+/** Open the presenter's reference in its own window: the five rules side by side. */
+export function openReference(): void {
+  window.open(`${window.location.pathname}?reference=1`, "straight-rows-reference", "popup=yes,width=1100,height=900,left=580,top=40");
+}
+
 /** Open the presenter's notes in their own window. They follow the tour in this one. */
 export function openNotes(): void {
   window.open(`${window.location.pathname}?notes=1`, "straight-rows-notes", "popup=yes,width=560,height=860");

@@ -1,8 +1,10 @@
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { openReference } from "./control";
 import { openTourChannel, type TourMessage, type TourState } from "./presenter";
 import { SCENES } from "./scenes";
+import { useScale } from "./useScale";
 
 /** Where the notes' text size is remembered between visits. */
 const SCALE_KEY = "straight-rows-notes-scale";
@@ -22,19 +24,11 @@ const minutes = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.
 export default function NotesWindow() {
   const [tour, setTour] = useState<TourState | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  // Chrome keeps one zoom level per site, so zooming the app for the projector zooms these notes too.
-  // The presenter sets the size back with - and +, and the choice is remembered.
-  const [scale, setScale] = useState(() => Number(window.localStorage.getItem(SCALE_KEY)) || 1);
-  const resize = (factor: number) =>
-    setScale((before) => {
-      const next = factor === 0 ? 1 : Math.min(2, Math.max(0.3, before * factor));
-      window.localStorage.setItem(SCALE_KEY, String(next));
-      return next;
-    });
+  const { style } = useScale(SCALE_KEY);
   const channel = useRef<BroadcastChannel | null>(null);
 
   useEffect(() => {
-    document.title = "Straight Rows notes";
+    document.title = "Presenting Notes 1";
     const link = openTourChannel();
     channel.current = link;
     link.onmessage = (event: MessageEvent<TourMessage>) => {
@@ -58,9 +52,7 @@ export default function NotesWindow() {
       if (event.key === "ArrowRight" || event.key === " ") next();
       else if (event.key === "ArrowLeft") previous();
       else if (event.key === "Escape") go(null);
-      else if (event.key === "-") resize(0.9);
-      else if (event.key === "=" || event.key === "+") resize(1 / 0.9);
-      else if (event.key === "0") resize(0);
+      else if (event.key === "c" || event.key === "C") openReference();
       else return;
       event.preventDefault();
     };
@@ -92,7 +84,7 @@ export default function NotesWindow() {
   const upcoming = SCENES[step + 1];
 
   return (
-    <div className="flex flex-col gap-5 overflow-y-auto bg-page p-6" style={{ zoom: scale, height: `${100 / scale}%` }}>
+    <div className="flex flex-col gap-5 overflow-y-auto bg-page p-6" style={style}>
       <header className="flex items-center gap-3">
         <span className="tabular text-sm text-muted">
           Stop {step + 1} of {SCENES.length}
@@ -137,7 +129,7 @@ export default function NotesWindow() {
       <footer className="mt-auto flex items-center gap-3 border-t border-line pt-4">
         <span className="text-sm text-muted">
           {upcoming ? `Next: ${upcoming.title}` : "Last stop. Questions are next."}
-          <span className="ml-3 text-faint">- and + resize</span>
+          <span className="ml-3 text-faint">- and + resize, C opens Presenting Notes 2</span>
         </span>
         <button onClick={previous} disabled={step === 0} className="ml-auto flex h-9 items-center gap-1 rounded-md border border-line px-3 text-sm text-ink hover:bg-panel-raised disabled:opacity-35">
           <ChevronLeft size={16} aria-hidden />
