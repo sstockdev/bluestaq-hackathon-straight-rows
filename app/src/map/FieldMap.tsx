@@ -16,7 +16,7 @@ function reportMapError(event: ErrorEvent) {
 
 /**
  * The map that fills the screen: a dark globe, and on it the simulated field,
- * the tractors, the rows they planted, and the other data layers. It opens
+ * the tractors, the fading trail of rows behind them, and the other data layers. It opens
  * fitted to the field, clear of the panels.
  */
 export default function FieldMap() {

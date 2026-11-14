@@ -19,6 +19,9 @@ interface RowSegment {
  */
 const MAX_SAMPLES = 360;
 
+/** How long a planted row stays on the map, in seconds. It fades over this time, so the field shows through. */
+const TRAIL_S = 1200;
+
 const segmentsByDay = new WeakMap<Day, RowSegment[]>();
 
 /** Split one track into runs of working samples that share a cause, none longer than MAX_SAMPLES. */
@@ -61,7 +64,11 @@ function rowSegments(day: Day): RowSegment[] {
   return segments;
 }
 
-/** The rows planted so far today, colored by what the detector reported while each was planted. */
+/**
+ * The rows planted in the last 20 minutes, colored by what the detector
+ * reported while each was planted. A row is brightest right behind its tractor
+ * and fades out as it ages.
+ */
 export function rowLayers(day: Day, clock: number): Layer[] {
   return [
     new TripsLayer<RowSegment>({
@@ -70,16 +77,16 @@ export function rowLayers(day: Day, clock: number): Layer[] {
       getPath: (segment) => segment.path,
       getTimestamps: (segment) => segment.times,
       getColor: (segment) => segment.color,
-      // Everything planted before the clock stays drawn; nothing after it is.
+      // Nothing planted after the clock is drawn.
       currentTime: clock - day.t0,
-      trailLength: day.n * day.step,
-      fadeTrail: false,
+      trailLength: TRAIL_S,
+      fadeTrail: true,
       getWidth: 5,
       widthUnits: "meters",
       widthMinPixels: 1.5,
       capRounded: true,
       jointRounded: true,
-      opacity: 0.85,
+      opacity: 0.9,
     }),
   ];
 }

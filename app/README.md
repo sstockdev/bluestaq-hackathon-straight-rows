@@ -1,6 +1,6 @@
 # Straight Rows map
 
-A map of what the detector found. The three tractors drive their recorded paths across the field, and the rows they plant are colored by the cause detected at that moment. Selecting a detection shows its action, its confidence, and the one chart that gave the cause away.
+A map of what the detector found. The three tractors drive their recorded paths across the field. Each leaves a trail that fades over 20 minutes and is colored by the cause detected at that moment. Selecting a detection shows its action, its confidence, and the one chart that gave the cause away.
 
 The app is a viewer. It reads JSON that a script exports from the detector's output, and nothing in `straightrows/` depends on it.
 
