@@ -1,8 +1,8 @@
 import clsx from "clsx";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, NotebookText, X } from "lucide-react";
 import { useApp } from "../state/store";
 import { Panel } from "../ui/Panel";
-import { endTour, goToStop } from "./control";
+import { endTour, goToStop, openNotes } from "./control";
 import { SCENES } from "./scenes";
 
 const BUTTON = "flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-medium transition-colors disabled:opacity-35";
@@ -14,7 +14,7 @@ export default function TourCaption() {
   if (step === null || !scene) return null;
 
   return (
-    <div className="pointer-events-none absolute bottom-[222px] left-1/2 z-20 w-[540px] max-w-[calc(100%-24px)] -translate-x-1/2">
+    <div className="pointer-events-none absolute bottom-[256px] left-[calc(50%+40px)] z-20 w-[540px] max-w-[calc(100%-24px)] -translate-x-1/2">
       <Panel className="px-4 py-3">
         <div className="flex items-center gap-3" role="status" aria-live="polite">
           <span className="tabular text-xs text-muted">
@@ -25,7 +25,11 @@ export default function TourCaption() {
               <span key={stop.title} className={clsx("h-1.5 w-5 rounded-full", i === step ? "bg-accent" : "bg-line")} />
             ))}
           </span>
-          <button onClick={endTour} title="End the tour (Esc)" aria-label="End the tour" className="ml-auto text-muted hover:text-ink">
+          <button onClick={openNotes} title="Open the speaker notes in their own window (N)" className="ml-auto flex items-center gap-1 text-xs text-muted hover:text-ink">
+            <NotebookText size={14} aria-hidden />
+            Notes
+          </button>
+          <button onClick={endTour} title="End the tour (Esc)" aria-label="End the tour" className="text-muted hover:text-ink">
             <X size={16} />
           </button>
         </div>

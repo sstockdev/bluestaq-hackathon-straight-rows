@@ -27,7 +27,8 @@ The app needs no internet once it is installed. The world outline the map draws 
 - The bar along the bottom holds the day buttons, play and pause, the playback speed, and the day's timeline. The Episodes lane numbers each detection in time order and brackets it from start to end, and dotted lines carry each start and end down through the tractor lanes. Click or drag the timeline to move the clock. Click a block to open that detection.
 - A detection opens on the right. Its evidence sentences, the detector's steps, and the other charts are under Details.
 - Space plays and pauses. The left and right arrow keys move the clock a minute at a time, or ten minutes with Shift; hold one down to scrub. `[` and `]` step to the previous and next detection.
-- `T` starts a four-stop guided tour. While it runs, the arrow keys move between stops, and Escape ends it.
+- `T` starts a six-stop guided tour that is the five-minute demo: the result, a clear case, an ambiguous case, how it was decided, the limits, and how to reproduce it. While it runs, the arrow keys move between stops, and Escape ends it.
+- `N` opens the speaker notes in their own window. They follow the tour, show what to say and what to point at for each stop, and time the demo against five minutes. The arrow keys work in that window too.
 - The day, the clock, the selected detection, and the open panel are kept in the URL, so any view can be reloaded or linked.
 
 ## How it is put together
@@ -57,3 +58,5 @@ Built with React, Vite, TypeScript, MapLibre GL, deck.gl, Tailwind CSS, Recharts
 `public/basemap/` is committed. It holds one file, a world land outline from Natural Earth, which is in the public domain.
 
 The farm in the dataset is simulated. Its coordinates fall partly on a real neighborhood on the east side of Casselton, so the map shows no aerial photo. It draws the field as soil with furrows and labels it as simulated. The neighboring fields, the roads, the town blocks, and the yard's pad and shed are an illustration, laid out on the one-mile grid this part of North Dakota uses. Only the field, the yard's position, the multipath line, and what moves on the field come from the data.
+
+A spoofed tractor's drift is at most about 12 m on an 800 m field, too small to see. The map draws it five times larger, and the label beside it gives the real distance.
