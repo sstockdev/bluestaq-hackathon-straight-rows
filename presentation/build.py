@@ -134,6 +134,21 @@ def steps(c):
             onset,
             f"Result: spoofing on {t}, {span}.{storm}",
         ]
+    if c.cls == "EQUIPMENT_FAULT" and facts.get("kind") == "antenna":
+        t = c.tractors[0]
+        return [
+            f"Counted dropout seconds on each tractor: seconds where the weakest satellite is at least {config.FAULT_GAP_DB:.0f} dB below the average signal.",
+            f"Over {span}, {t} had dropouts {facts['dropout_frac']:.0%} of the time. The limit is {config.FAULT_DROPOUT_FRAC:.0%}. The other tractors had at most {facts['neighbor_dropout_frac']:.0%}.",
+            f"{t}'s average signal held at {facts['cn0_median']} dB-Hz while its satellite count dipped to {facts['sats_min']}. A healthy average with a failing weakest signal, on one machine only, points at that machine's antenna.",
+            f"Result: equipment fault (antenna) on {t}. The start is blurred by about a minute because dropouts are counted over a {config.FAULT_WINDOW_S // 60}-minute window.",
+        ]
+    if c.cls == "EQUIPMENT_FAULT" and facts.get("kind") == "link":
+        t = c.tractors[0]
+        return [
+            f"Found {t}'s correction link dropping in and out over {span}. It was down {facts['link_down_frac']:.0%} of the time, in bursts closer together than {config.LINK_MERGE_GAP_S // 60} minutes.",
+            f"{t}'s signal strength stayed at {facts['cn0_median']} dB-Hz, and it fell out of RTK fixed {facts['float_frac']:.0%} of the time. The satellites are fine; the corrections are not arriving.",
+            f"Result: equipment fault (correction link) on {t}. The other machines can keep working.",
+        ]
     return [f"Found {span} on {', '.join(c.tractors)}."]
 
 
