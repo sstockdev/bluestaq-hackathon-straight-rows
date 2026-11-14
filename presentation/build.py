@@ -123,6 +123,17 @@ def steps(c):
             f"Kept the tractors at or above {config.JAM_MEMBER_DB} dB. {verdict}",
             rfi,
         ]
+    if c.cls == "SPOOFING":
+        t, trigger = c.tractors[0], pd.Timestamp(facts["trigger_time"])
+        onset = (f"The drift climbs steadily, so it was walked back to where it began: about {hhmm(c.start, True)}, at {facts['xte_rate_m_per_min']} m per minute."
+                 if facts["onset_method"] == "extrapolated" else "The drift never doubled, so the trigger time is used as the start.")
+        storm = " This is inside a storm, so every machine's guidance is noisier and the confidence will be lower." if facts["in_storm"] else ""
+        return [
+            f"Compared each tractor's cross-track error with the other two. {t} became at least {config.SPOOF_XTE_M:.0f} m worse at {hhmm(trigger, True)} and reached {facts['xte_max_m']} m. The others sat at {facts['others_xte_m']} m.",
+            f"Checked {t}'s signal. Its unexplained loss is {facts['excess_db']} dB, under {config.SPOOF_MAX_EXCESS_DB:.0f} dB, so the signal is healthy. A jammed tractor would fail this check.",
+            onset,
+            f"Result: spoofing on {t}, {span}.{storm}",
+        ]
     return [f"Found {span} on {', '.join(c.tractors)}."]
 
 
