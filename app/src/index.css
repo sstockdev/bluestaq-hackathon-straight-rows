@@ -1,0 +1,49 @@
+@import "tailwindcss";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/barlow-condensed/500.css";
+@import "@fontsource/barlow-condensed/600.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* Design tokens. Tailwind turns each one into utilities such as bg-panel or text-muted. */
+@theme {
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-condensed: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+
+  --color-page: #0c0e11;
+  --color-panel: #12161b;
+  --color-panel-raised: #1a2027;
+  --color-line: #2a313a;
+  --color-ink: #f4f3ee;
+  --color-muted: #9aa4af;
+  --color-faint: #6b7682;
+  --color-accent: #2f7df6;
+
+  /* One color per cause. lib/causes.ts holds the same values for the map layers. */
+  --color-sun: #f0b429;
+  --color-jam: #f0506e;
+  --color-spoof: #9d7bf5;
+  --color-fault: #4da3e0;
+  --color-multipath: #9aa2a8;
+
+  --color-t1: #3987e5;
+  --color-t2: #e8703a;
+  --color-t3: #1fb37f;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.tabular { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

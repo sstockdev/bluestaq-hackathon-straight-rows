@@ -32,7 +32,7 @@ python scripts/score_dev.py                       # dev score for this detector
 python scripts/score_dev.py --detector baseline   # dev score for the starter baseline
 python scripts/sensitivity.py                     # move each threshold by 25% and rerun dev
 python scripts/plot_episode.py --start 2026-05-04T16:15:00Z --end 2026-05-04T17:30:00Z --out figures/example.png
-python presentation/build.py                      # rebuild the demo page, presentation/index.html
+python app/tools/export_data.py                   # export the results for the map app (see app/README.md)
 ```
 
 ## Approach
@@ -277,5 +277,5 @@ Limitation: A full dev score says nothing about evaluation day. The sweep and th
 | `decisions.json` | The design decisions, rendered into this README by `scripts/render_decisions.py --write` |
 | `scripts/` | Data download, dev scoring, the organizers' scorer, the sensitivity sweep, plotting |
 | `figures/` | Figures used in this README |
-| `presentation/` | A demo page that draws the solution's outputs. It is a viewer and not part of the detector |
+| `app/` | A map app that shows the tractors, the detections, and the decisions. It is a viewer and not part of the detector. See `app/README.md` |
 | `submission/`, `notebooks/`, `docs/` | The starter baseline, validator, notebook, and official guide, unchanged |

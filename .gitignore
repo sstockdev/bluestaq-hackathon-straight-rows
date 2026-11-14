@@ -5,4 +5,6 @@ __pycache__/
 .ipynb_checkpoints/
 submission.json
 dev_score.json
-presentation/index.html
+app/node_modules/
+app/dist/
+app/public/data/
