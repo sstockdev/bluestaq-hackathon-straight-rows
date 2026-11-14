@@ -66,5 +66,21 @@ MP_MIN_RECUR = 10
 
 # Confidence
 CONF_BASE, CONF_MIN, CONF_MAX = 0.60, 0.05, 0.95
-CONF_NO_S4_CAP = 0.40
-CONF_SINGLE_MACHINE_LOSS_CAP = 0.45
+CONF_NO_S4_CAP = 0.40              # S4 missing: the sky's share of the loss is unknown
+CONF_SINGLE_MACHINE_LOSS_CAP = 0.45  # one machine losing signal: fault or a jammer beside it
+
+# What is added to CONF_BASE for each piece of evidence. Support adds; a rival explanation subtracts.
+# These are judgment calls, not statistical calibration: 12 labeled episodes cannot calibrate them.
+CONF_TERMS = {
+    "SPACE_WEATHER": {"sag_matches": 0.15, "uniform": 0.10, "kp_storm": 0.05, "advisory": 0.05},
+    "JAMMING": {"graded": 0.10, "rfi_report": 0.15, "rfi_report_weak": 0.05, "quiet_sky": 0.10,
+                "uniform_in_storm": -0.10},
+    "SPOOFING": {"healthy_signal": 0.15, "steady_ramp": 0.10, "in_storm": -0.15},
+    "EQUIPMENT_FAULT": {"link": 0.25, "antenna_one_machine": 0.20, "in_storm": -0.10},
+    "MULTIPATH": {"recurs": 0.20, "in_storm": -0.15},
+}
+CONF_SAG_MATCH_DB = 2.0            # observed drop within this of the S4 prediction
+CONF_UNIFORM_DB = 2.0              # tractors within this of each other
+CONF_STRONG_RFI = 0.5              # a report's own confidence at or above this counts in full
+CONF_HEALTHY_SIGNAL_DB = 1.0       # spoofing: unexplained loss within this of zero
+CONF_NEIGHBOR_DROPOUT = 0.08       # antenna fault: the other machines' dropout share stays under this

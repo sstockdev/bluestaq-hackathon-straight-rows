@@ -208,6 +208,7 @@ def _fault_facts(f, tractor, start, end, kind, dropout):
         "sats_min": int(_span(f.num_sats[tractor], start, end).min()),
         "cn0_median": round(float(_span(f.cn0[tractor], start, end).median()), 1),
         "link_down_frac": round(float(1 - _span(f.link_ok[tractor], start, end).mean()), 2),
+        "neighbor_link_down_frac": round(float(1 - _span(f.link_ok[others], start, end).mean().min()), 2),
         "float_frac": round(float((_span(f.fix_state[tractor], start, end) != "RTK_FIXED").mean()), 2),
         "s4_median": sky["s4_median"],
         "s4_available": sky["s4_available"],
