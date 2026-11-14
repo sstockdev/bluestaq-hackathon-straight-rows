@@ -160,15 +160,14 @@ export const SCENES: Scene[] = [
   },
   {
     title: "Data that would help",
-    caption: "Five kinds of data would fix most of the limits, starting with per-satellite signal strength.",
+    caption: "An IMU or wheel odometry: a position source that isn't GPS.",
     seconds: 30,
-    cue: "Switch back to the app. The Limits panel has scrolled to the list. Read down it.",
+    cue: "Switch back to the app. The Limits panel has scrolled to the one item. Read it.",
     notes: [
-      "If I could ask for more data, this is the order I would ask in.",
-      "Per-satellite signal strength first. A jammer has a direction, and a failing antenna has a pattern across satellites. The average and the minimum hide both.",
-      "Then more labeled episodes, especially weak jamming. Twelve is what every threshold rests on.",
-      "A second storm would test the sag model, which comes from one day.",
-      "And an IMU or wheel odometry, because a real receiver cannot see its own spoofed drift.",
+      "If I could ask for one more kind of data, it would be an IMU or wheel odometry on each tractor.",
+      "That is a position source that isn't GPS.",
+      "In this dataset the drift comes from an idealized monitor that knows the true line. A real receiver being spoofed believes its own position, so it can't see its own drift.",
+      "With a second source I could compare the two, and a spoofer that jumps the position would be caught too.",
       "That is the detector. I am happy to open any of the code.",
     ],
     apply: (stillHere) => {

@@ -60,20 +60,17 @@ export const LIMITS: Limit[] = [
   },
 ];
 
-/** One kind of data the detector does not have, and what it would fix. */
+/** One kind of data the detector does not have: what it is, and why it is needed. */
 export interface Wanted {
   data: string;
-  fixes: string;
+  what: string;
+  why: string;
 }
 
 /**
- * The data that would help most, the most useful first. The README's "Data
- * that would help" section has the full list of seven.
+ * The data that would help: the one kind worth asking for first. The README's
+ * "Data that would help" section says the same.
  */
 export const WANTED: Wanted[] = [
-  { data: "Per-satellite signal strength", fixes: "Finds weaker jammers and tells an antenna fault from noise." },
-  { data: "More labeled episodes", fixes: "Thresholds from more than 12, and a way to check confidence." },
-  { data: "A second storm, and S4 more often", fixes: "Tests the sag model and closes the 15-minute gap." },
-  { data: "A second antenna on each tractor", fixes: "Tells a fault from a jammer beside one machine." },
-  { data: "An IMU or wheel odometry", fixes: "Sees spoofing that a receiver cannot see on its own." },
+  { data: "IMU or wheel odometry", what: "A position source that isn't GPS", why: "A real receiver can't see its own spoofed drift" },
 ];

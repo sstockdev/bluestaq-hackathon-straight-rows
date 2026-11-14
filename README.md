@@ -139,13 +139,7 @@ What can go wrong in use:
 
 ## Data that would help
 
-- Per-satellite C/N0. A jammer has a direction and an antenna fault has a pattern across satellites, and the mean and the minimum hide both.
-- An IMU or wheel odometry on each tractor. Cross-track error here comes from an idealized monitor. A real receiver can't see its own spoofed drift without an independent position source.
-- Orientation or bearing for the interference reports. They give an ellipse without a direction, so a report can only be matched by distance.
-- S4 at a finer cadence, and a second storm. Both would test the sag model and the assumption that S4 and the farm impact move together.
-- More labeled episodes, especially weak jamming and single-machine signal loss. Those are the cases the thresholds can't separate yet.
-- A work-state signal from the implement, which would be firmer than speed for deciding when a tractor is working.
-- A site survey of the headland, to name the obstruction behind the recurring multipath.
+An IMU or wheel odometry on each tractor: a position source that isn't GPS. Cross-track error in this dataset comes from an idealized monitor that knows the true line. A real receiver can't see its own spoofed drift.
 
 ## Docs
 
