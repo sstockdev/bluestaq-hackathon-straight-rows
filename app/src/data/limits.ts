@@ -1,12 +1,11 @@
 /**
  * The six limits of this detector that matter most, for the Limits panel: what
  * was accepted, and why that was judged to be acceptable. They are in order,
- * the one that could change the output most first. The README's "Failure modes
- * and false alarms" section has the full list.
+ * the one that could change the output most first. The README's "Where it
+ * breaks" section has the full list.
  *
- * Every number comes from the README at the repo root (the sections "Failure
- * modes and false alarms", "Results on the dev episodes", and "Design
- * decisions") or from decisions.json. When those change, change this file.
+ * Every number comes from the README at the repo root (the sections "Where it
+ * breaks" and "Results") or from decisions.json. When those change, change this file.
  */
 
 export interface Limit {
@@ -59,4 +58,22 @@ export const LIMITS: Limit[] = [
     ok: "12 episodes cannot calibrate it, so every term is shown.",
     detail: "Whether 0.8 means right 80% of the time is unknown. More labeled episodes would allow a calibration check.",
   },
+];
+
+/** One kind of data the detector does not have, and what it would fix. */
+export interface Wanted {
+  data: string;
+  fixes: string;
+}
+
+/**
+ * The data that would help most, the most useful first. The README's "Data
+ * that would help" section has the full list of seven.
+ */
+export const WANTED: Wanted[] = [
+  { data: "Per-satellite signal strength", fixes: "Finds weaker jammers and tells an antenna fault from noise." },
+  { data: "More labeled episodes", fixes: "Thresholds from more than 12, and a way to check confidence." },
+  { data: "A second storm, and S4 more often", fixes: "Tests the sag model and closes the 15-minute gap." },
+  { data: "A second antenna on each tractor", fixes: "Tells a fault from a jammer beside one machine." },
+  { data: "An IMU or wheel odometry", fixes: "Sees spoofing that a receiver cannot see on its own." },
 ];

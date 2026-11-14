@@ -1,4 +1,5 @@
 import { useApp } from "../state/store";
+import { WANTED_ID } from "../panels/LimitsPanel";
 import { showDetection } from "./showDetection";
 
 /** One stop of the guided tour. */
@@ -32,10 +33,13 @@ function showPanel(panel: "why" | "limits") {
 const showAmbiguous = (stillHere: () => boolean) =>
   showDetection("2026-05-05", (detection) => detection.label === "TRN-05", stillHere);
 
+/** How long to wait for the Limits panel to be on screen before scrolling inside it, in milliseconds. */
+const PANEL_SETTLE_MS = 120;
+
 /**
- * The six stops of the five-minute demo, in order: the result, an episode with
- * its evidence, an ambiguous case, how the detector decided it, the limits,
- * and how the code reproduces the submission.
+ * The seven stops of the five-minute demo, in order: the result, an episode
+ * with its evidence, an ambiguous case, how the detector decided it, the
+ * limits, how the code reproduces the submission, and the data that would help.
  */
 export const SCENES: Scene[] = [
   {
@@ -54,7 +58,7 @@ export const SCENES: Scene[] = [
   {
     title: "A clear case",
     caption: "All three machines lost signal under a quiet sky, and an interference report followed.",
-    seconds: 75,
+    seconds: 65,
     cue: "Point at the action, the three chips, then the bars. Click Details for the evidence.",
     notes: [
       "This is May 6 at 02:12. All three tractors are flagged for jamming, for 42 minutes.",
@@ -71,7 +75,7 @@ export const SCENES: Scene[] = [
   {
     title: "An ambiguous case",
     caption: "A jammer inside a storm: every machine lost the same amount, and S4 explains only part of it.",
-    seconds: 60,
+    seconds: 55,
     cue: "Point at the 10 + 12 on the bars, then the 0.50.",
     notes: [
       "This is a dev day, so there is a label to check against: TRN-05.",
@@ -88,7 +92,7 @@ export const SCENES: Scene[] = [
   {
     title: "How it decided",
     caption: "Flag each second, join the seconds into events, check each event, then score the confidence.",
-    seconds: 45,
+    seconds: 40,
     cue: "The How panel follows the same detection. Scroll from box 4 down to box 6.",
     notes: [
       "This panel is the detector as a flowchart, following the detection I just showed.",
@@ -104,7 +108,7 @@ export const SCENES: Scene[] = [
   {
     title: "Limits",
     caption: "Six limits were accepted, and each row says why.",
-    seconds: 45,
+    seconds: 40,
     cue: "Read the first three rows. Open one if a judge asks.",
     notes: [
       "These are the six limits I accepted, and why.",
@@ -118,7 +122,7 @@ export const SCENES: Scene[] = [
     title: "Reproduce it",
     caption: "One command rebuilds the submission, and its checksum matches the submitted file.",
     commands: ["python make_submission.py", "sha256sum submission.json"],
-    seconds: 45,
+    seconds: 40,
     cue: "Switch to the terminal and run the two commands. The checksum starts 58281673.",
     notes: [
       "Everything comes from one command. It loads the data, runs the five detectors, scores the dev days, writes the submission, and validates it.",
@@ -127,5 +131,25 @@ export const SCENES: Scene[] = [
       "I can change any threshold in config.py and rerun it, if you want to see what moves.",
     ],
     apply: () => showPanel("why"),
+  },
+  {
+    title: "Data that would help",
+    caption: "Five kinds of data would fix most of the limits, starting with per-satellite signal strength.",
+    seconds: 30,
+    cue: "Switch back to the app. The Limits panel has scrolled to the list. Read down it.",
+    notes: [
+      "If I could ask for more data, this is the order I would ask in.",
+      "Per-satellite signal strength first. A jammer has a direction, and a failing antenna has a pattern across satellites. The average and the minimum hide both.",
+      "Then more labeled episodes, especially weak jamming. Twelve is what every threshold rests on.",
+      "A second storm would test the sag model, which comes from one day.",
+      "And an IMU or wheel odometry, because a real receiver cannot see its own spoofed drift.",
+      "That is the detector. I am happy to open any of the code.",
+    ],
+    apply: (stillHere) => {
+      showPanel("limits");
+      window.setTimeout(() => {
+        if (stillHere()) document.getElementById(WANTED_ID)?.scrollIntoView({ block: "start", behavior: "smooth" });
+      }, PANEL_SETTLE_MS);
+    },
   },
 ];

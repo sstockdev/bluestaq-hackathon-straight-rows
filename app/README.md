@@ -24,7 +24,7 @@ npm run dev                       # http://localhost:5173
 | Space | Play or pause |
 | Left, Right | Move the clock one minute, or ten with Shift |
 | `[`, `]` | Previous or next detection |
-| `T` | Start the six-stop tour. The arrows move it and Escape ends it |
+| `T` | Start the seven-stop tour. The arrows move it and Escape ends it |
 | `N` | Open the speaker notes in a second window |
 
 ## Code
