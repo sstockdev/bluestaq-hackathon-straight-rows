@@ -11,6 +11,7 @@ import { useUrlSync } from "./state/useUrlSync";
 import TimeBar from "./time/TimeBar";
 import { usePlayback } from "./time/usePlayback";
 import { useTimeKeys } from "./time/useTimeKeys";
+import ReproduceCard from "./tour/ReproduceCard";
 import TourCaption from "./tour/TourCaption";
 import { useTour } from "./tour/useTour";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
@@ -72,6 +73,7 @@ export default function App() {
         </div>
         {!present && <TimeBar />}
       </div>
+      <ReproduceCard />
       <TourCaption />
     </div>
   );

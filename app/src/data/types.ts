@@ -19,6 +19,8 @@ export interface Index {
   field: { center: [number, number]; bounds: [number, number, number, number] };
   thresholds: Thresholds;
   rules: Rules;
+  /** How many detections submission.json holds and its SHA-256, or null when the file was not there at export time. */
+  submission: { detections: number; sha256: string } | null;
   /** Dev-day results from the organizers' scorer. */
   score: { ours: ScoreSummary; baseline: ScoreSummary };
   decisions: Decision[];
@@ -200,6 +202,11 @@ export interface Detection {
   steps: string[];
   /** The dev label this detection matches, such as "TRN-05", or null. */
   label: string | null;
+  /**
+   * For spoofing: when the drift first passed the limit, in epoch seconds. The
+   * start is earlier, because it is walked back along the drift. Otherwise null.
+   */
+  noticed: number | null;
 }
 
 /** A labeled episode or a baseline detection, drawn as a block on the timeline. */

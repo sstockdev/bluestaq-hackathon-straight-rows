@@ -1,4 +1,5 @@
-import type { Episode, Thresholds } from "../../data/types";
+import type { Detection, Episode, Thresholds } from "../../data/types";
+import { clock } from "../../lib/time";
 import { TRACTORS } from "../../lib/causes";
 import { axis, tractorRows, valueRange, type ChartRow } from "./series";
 
@@ -16,6 +17,8 @@ export interface ChartSpec {
   dashed: { key: string; name: string } | null;
   /** Horizontal reference lines. The label sits above the line, or under it with `below`. */
   marks: { y: number; label: string; below?: boolean }[];
+  /** Vertical lines at moments in time, each with a short label at its top. */
+  moments?: { t: number; label: string }[];
   /** The y axis: its limits and its ticks. */
   axis: { domain: [number, number]; ticks: number[] };
 }
@@ -64,8 +67,12 @@ export function lossChart(episode: Episode, thresholds: Thresholds, spoofing: bo
   };
 }
 
-/** Absolute cross-track error per tractor, with the spoofing limit. */
-export function driftChart(episode: Episode, thresholds: Thresholds): ChartSpec {
+/**
+ * Absolute cross-track error per tractor, with the spoofing limit. Two moments
+ * are marked: when the drift passed the limit and was noticed, and the earlier
+ * start the detector walked back to.
+ */
+export function driftChart(episode: Episode, thresholds: Thresholds, detection: Detection): ChartSpec {
   const rows = tractorRows(episode, "xte");
   const [, high] = valueRange(rows, TRACTORS);
   return {
@@ -76,6 +83,13 @@ export function driftChart(episode: Episode, thresholds: Thresholds): ChartSpec 
     rows,
     dashed: null,
     marks: [{ y: thresholds.spoofXte, label: `limit ${thresholds.spoofXte} m` }],
+    moments:
+      detection.noticed === null
+        ? []
+        : [
+            { t: detection.start, label: `start ${clock(detection.start)}` },
+            { t: detection.noticed, label: `noticed ${clock(detection.noticed)}` },
+          ],
     axis: axis(0, Math.max(high, thresholds.spoofXte * 3)),
   };
 }

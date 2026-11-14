@@ -11,6 +11,7 @@ Three kinds of file come out, in the shapes app/src/data/types.ts defines:
 
 The script reads the detector in straightrows/ and changes nothing in it.
 """
+import hashlib
 import json
 import math
 import sys
@@ -184,6 +185,7 @@ def detection(c, a, b, labels):
         "terms": [[reason, weight] for reason, weight in evidence.confidence_terms(clipped)],
         "evidence": evidence.evidence(clipped), "steps": steps(clipped),
         "label": label_for(c.cls, c.tractors, c.start, c.end, labels),
+        "noticed": epoch(pd.Timestamp(c.facts["trigger_time"])) if c.cls == "SPOOFING" else None,
     }
 
 
@@ -347,6 +349,15 @@ def rules():
     }
 
 
+def submission():
+    """The size and checksum of submission.json as make_submission.py last wrote it, or None when it is not there."""
+    path = ROOT / "submission.json"
+    if not path.exists():
+        return None
+    raw = path.read_bytes()
+    return {"detections": len(json.loads(raw)["detections"]), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
 def write(name, payload):
     """Write one JSON file and print its size. json refuses NaN here, so none can reach the app."""
     path = OUT / name
@@ -380,7 +391,7 @@ def main():
                        baseline_result["false_positives"] if dev else None))
 
     write("index.json", {
-        "days": days, "field": field(f), "thresholds": thresholds(), "rules": rules(),
+        "days": days, "field": field(f), "thresholds": thresholds(), "rules": rules(), "submission": submission(),
         "score": {"ours": summary(ours_result), "baseline": summary(baseline_result)},
         "decisions": json.loads((ROOT / "decisions.json").read_text()),
     })

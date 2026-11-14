@@ -24,7 +24,7 @@ npm run dev                       # http://localhost:5173
 | Space | Play or pause |
 | Left, Right | Move the clock one minute, or ten with Shift |
 | `[`, `]` | Previous or next detection |
-| `T` | Start the seven-stop tour. The arrows move it and Escape ends it |
+| `T` | Start the eight-stop tour. The arrows move it and Escape ends it |
 | `N` | Open the speaker notes in a second window |
 | `P` | Presentation mode, for a projector. Zoom the browser in afterwards |
 

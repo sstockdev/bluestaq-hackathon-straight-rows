@@ -13,7 +13,7 @@ function isSignalLoss({ cls, kind }: Detection): boolean {
 /** The time charts that explain a detection, the one that gave the cause away first. */
 function chartsFor(detection: Detection, episode: Episode, thresholds: Thresholds): ChartSpec[] {
   if (isSignalLoss(detection)) return [lossChart(episode, thresholds, false), signalChart(episode)];
-  if (detection.cls === "SPOOFING") return [driftChart(episode, thresholds), lossChart(episode, thresholds, true)];
+  if (detection.cls === "SPOOFING") return [driftChart(episode, thresholds, detection), lossChart(episode, thresholds, true)];
   if (detection.kind === "link") return [linkChart(episode)];
   return [dropoutChart(episode, thresholds)];
 }

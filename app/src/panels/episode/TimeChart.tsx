@@ -59,6 +59,17 @@ export function TimeChart({ spec, detection }: { spec: ChartSpec; detection: Det
                 label={{ value: mark.label, position: mark.below ? "insideTopRight" : "insideBottomRight", ...MARK_TEXT }}
               />
             ))}
+            {spec.moments?.map((moment, i) => (
+              <ReferenceLine
+                key={moment.label}
+                x={moment.t}
+                stroke="var(--color-ink)"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+                // The first label sits left of its line and the second right, so they never collide.
+                label={{ value: moment.label, position: i === 0 ? "insideTopRight" : "insideTopLeft", ...MARK_TEXT, fill: "var(--color-ink)" }}
+              />
+            ))}
             {TRACTORS.map((id) => (
               <Line
                 key={id}
