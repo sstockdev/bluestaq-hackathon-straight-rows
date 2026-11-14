@@ -149,6 +149,14 @@ def steps(c):
             f"{t}'s signal strength stayed at {facts['cn0_median']} dB-Hz, and it fell out of RTK fixed {facts['float_frac']:.0%} of the time. The satellites are fine; the corrections are not arriving.",
             f"Result: equipment fault (correction link) on {t}. The other machines can keep working.",
         ]
+    if c.cls == "MULTIPATH":
+        t = c.tractors[0]
+        return [
+            f"Looked for short dips: {config.MP_MIN_S} to {config.MP_MAX_S} seconds where {t}'s weakest satellite is at least {config.MP_GAP_DB:.0f} dB below its average signal.",
+            f"This one lasted {facts['duration_s']} s. The weakest satellite sat at {facts['min_cn0_db']} dB-Hz while the average held at {facts['cn0_db']}.",
+            f"Checked where it happened: latitude {facts['spot_lat']}. {t} had {facts['recurrences']} dips at that latitude over the three days, about one per pass. A dip that repeats at one place is something fixed beside the field.",
+            f"Result: multipath on {t}, {span}. Keep working.",
+        ]
     return [f"Found {span} on {', '.join(c.tractors)}."]
 
 
