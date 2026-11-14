@@ -34,6 +34,8 @@ python scripts/plot_episode.py --start 2026-05-04T16:15:00Z --end 2026-05-04T17:
 python app/tools/export_data.py                   # export the results for the map app (see app/README.md)
 ```
 
+There is also a map app that plays the tractors' paths and opens each detection with its evidence. [app/README.md](app/README.md).
+
 ## How it works
 
 One table with a row for every second feeds five detectors, one per cause. The detectors don't know about each other, so a storm and a jammer inside it come out as two overlapping detections. Seconds when a tractor is parked are ignored everywhere.
@@ -157,7 +159,7 @@ straightrows/        The detector: config.py (thresholds), data.py, features.py,
 make_submission.py   The one command: scores dev, writes dev_pred.json and submission.json, validates
 decisions.json       The twelve decisions. scripts/render_decisions.py --write turns them into docs/DECISIONS.md
 scripts/             Data download, dev scoring, the organizers' scorer, the sensitivity sweep, plotting
-figures/             Figures used in this README
+figures/             Figures used in this README and the app's
 app/                 A map app for the tractors, the detections and the decisions. The detector doesn't depend on it
 submission/          The starter baseline, validator and template, unchanged
 notebooks/, docs/    The starter notebook, the starter README and the official guide, unchanged

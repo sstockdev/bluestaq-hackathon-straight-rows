@@ -2,6 +2,8 @@
 
 A viewer for the detector's output. Three tractors drive their recorded paths across the field, and each detection opens with its action, confidence, and evidence. The detector does not depend on it.
 
+![The app](../figures/app.png)
+
 ## Run it
 
 From the repository root, after the setup in the main README:
