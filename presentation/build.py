@@ -17,7 +17,13 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 
-from straightrows import config, detectors, features  # noqa: E402
+sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "submission"))
+
+import score_dev  # noqa: E402
+from score_submission import score  # noqa: E402
+
+from straightrows import config, detectors, evidence, features, pipeline  # noqa: E402
 
 MAX_POINTS = 1200
 TRACTORS = list(config.TRACTORS)
@@ -165,7 +171,9 @@ def found_in(cands, a, b):
     inside = [c for c in cands if c.start < b and c.end > a]
     inside.sort(key=lambda c: (c.cls == "MULTIPATH", -(c.end - c.start).total_seconds()))
     return [{"cls": c.cls, "start": c.start.timestamp(), "end": c.end.timestamp(), "tractors": c.tractors,
-             "kind": c.facts.get("kind"), "steps": steps(c)} for c in inside[:12]]
+             "kind": c.facts.get("kind"), "steps": steps(c), "confidence": evidence.confidence(c),
+             "terms": [[reason, weight] for reason, weight in evidence.confidence_terms(c)],
+             "evidence": evidence.evidence(c)} for c in inside[:12]]
 
 
 def episode(f, label, cands, dropout_share):
@@ -209,13 +217,68 @@ def episode(f, label, cands, dropout_share):
     }
 
 
+
+def summary(result):
+    """The scorer's result, trimmed to what the scoreboard draws."""
+    return {
+        "diagnostic": round(result["diagnostic_score"], 2), "macroF1": round(result["macro_f1"], 3),
+        "timing": round(result["mean_timing_credit"], 3),
+        "caught": sum(e["correct"] for e in result["episodes"]), "total": result["episode_count"],
+        "falsePositives": len(result["false_positives"]),
+        "f1": {name: round(m["f1"], 3) for name, m in result["class_metrics"].items()},
+        "episodes": {e["episode"]: {"predicted": e.get("predicted_class"), "onset_s": e.get("onset_error_s"),
+                                    "correct": e["correct"]} for e in result["episodes"]},
+    }
+
+
+def label_for(item, labels):
+    """The dev label this detection stands for: same class, a shared tractor, overlapping time."""
+    a, b = pd.Timestamp(item["start"]), pd.Timestamp(item["end"])
+    for label in labels:
+        if (label["class"] == item["class"] and set(label["tractors"]) & set(item["tractors"])
+                and a < pd.Timestamp(label["end"]) and b > pd.Timestamp(label["start"])):
+            return label["id"]
+    return None
+
+
+def day_views(f, labels, ours, baseline, baseline_result):
+    """One timeline per dev day: the sky, the labels, the baseline, and this detector."""
+    false_positives = {(d["start"], d["class"]) for d in baseline_result["false_positives"]}
+    block = lambda d, **extra: {"cls": d["class"], "start": pd.Timestamp(d["start"]).timestamp(),
+                                "end": pd.Timestamp(d["end"]).timestamp(), "tractors": d["tractors"], **extra}
+    days = []
+    for date in pd.date_range(config.DEV_START, config.DEV_END, freq="1D", inclusive="left"):
+        a, b = date, date + pd.Timedelta(days=1)
+        inside = lambda items: [d for d in items if pd.Timestamp(d["start"]) < b and pd.Timestamp(d["end"]) > a]
+        working = f.working["T1"].loc[a:b - pd.Timedelta(seconds=1)]
+        from straightrows.intervals import runs
+        mine = inside(ours)
+        days.append({
+            "date": date.strftime("%B %-d"), "t0": a.timestamp(),
+            "s4": [[t.timestamp(), round(float(v), 3)] for t, v in f.s4.loc[a:b].iloc[::900].items()],
+            "kp": [[t.timestamp(), round(float(v), 1)] for t, v in f.kp.loc[a:b].iloc[::10800].items()],
+            "working": [[s.timestamp(), e.timestamp()] for s, e in runs(working)],
+            "labels": [block(d, id=d["id"]) for d in inside(labels)],
+            "baseline": [block(d, wrong=(d["start"], d["class"]) in false_positives, id=label_for(d, labels)) for d in inside(baseline)],
+            "ours": [block(d, id=label_for(d, labels), confidence=d["confidence"]) for d in mine if d["class"] != "MULTIPATH"],
+            "multipath": {t: [pd.Timestamp(d["start"]).timestamp() for d in mine if d["class"] == "MULTIPATH" and d["tractors"] == [t]]
+                          for t in TRACTORS},
+        })
+    return days
+
+
 def main():
     f = features.build_features(ROOT / "data")
     labels = json.loads((ROOT / "data/labels/train_episodes.json").read_text())["episodes"]
     cands = run_detectors(f)
     dropout_seconds = ((f.gap >= config.FAULT_GAP_DB) & f.working).astype(float)
     dropout_share = dropout_seconds.rolling(config.FAULT_WINDOW_S, center=True, min_periods=1).mean()
+    ours = pipeline.finalize(cands, config.DEV_START, config.DEV_END, limit=None)
+    baseline = score_dev.detect_dev(str(ROOT / "data"), "baseline")
+    ours_result, baseline_result = score({"detections": ours}, {"episodes": labels}), score({"detections": baseline}, {"episodes": labels})
     payload = {
+        "days": day_views(f, labels, ours, baseline, baseline_result),
+        "score": {"ours": summary(ours_result), "baseline": summary(baseline_result)},
         "episodes": [episode(f, label, cands, dropout_share) for label in labels],
         "thresholds": {
             "sagMin": config.S4_SAG_MIN, "jamTrigger": config.JAM_TRIGGER_DB, "jamMember": config.JAM_MEMBER_DB,
