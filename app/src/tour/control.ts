@@ -30,9 +30,32 @@ export function endTour(): void {
   useApp.getState().setTourStep(null);
 }
 
-/** Open the presenter's reference in its own window: the five rules side by side. */
-export function openReference(): void {
-  window.open(`${window.location.pathname}?reference=1`, "straight-rows-reference", "popup=yes,width=1100,height=900,left=580,top=40");
+/**
+ * True when the browser blocked the reference the last time the app tried to
+ * open it. The notes window is told, and opens the reference itself on the
+ * presenter's next key press or click there.
+ */
+let referenceBlocked = false;
+export const referenceIsBlocked = () => referenceBlocked;
+export const referenceWasOpened = () => {
+  referenceBlocked = false;
+};
+
+/** Open the presenter's reference in its own window: the five rules side by side. Returns false when the browser blocked it. */
+export function openReference(): boolean {
+  const opened = window.open(`${window.location.pathname}?reference=1`, "straight-rows-reference", "popup=yes,width=1100,height=900,left=580,top=40");
+  referenceBlocked = opened === null;
+  return !referenceBlocked;
+}
+
+/**
+ * Open both presenter windows: the notes, then the reference. A browser allows
+ * one new window per key press unless pop-ups are allowed for the site, so the
+ * reference is often blocked here. The notes window then opens it (see NotesWindow).
+ */
+export function openPresenterWindows(): void {
+  openNotes();
+  openReference();
 }
 
 /** Open the presenter's notes in their own window. They follow the tour in this one. */

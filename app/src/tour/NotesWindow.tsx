@@ -42,6 +42,33 @@ export default function NotesWindow() {
     };
   }, []);
 
+  // The app could not open the reference with the notes, so the first key press or click here opens it.
+  const referenceBlocked = tour?.referenceBlocked ?? false;
+  useEffect(() => {
+    if (!referenceBlocked) return;
+    const open = (event: Event) => {
+      if (!openReference()) return;
+      channel.current?.postMessage({ type: "reference-opened" } satisfies TourMessage);
+      setTour((state) => state && { ...state, referenceBlocked: false });
+      // A key that opens the reference does nothing else, so it cannot also move the tour.
+      if (event.type === "keydown") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener("keydown", open, true);
+    window.addEventListener("pointerdown", open, true);
+    return () => {
+      window.removeEventListener("keydown", open, true);
+      window.removeEventListener("pointerdown", open, true);
+    };
+  }, [referenceBlocked]);
+  const blocked = referenceBlocked && (
+    <p className="fixed inset-x-0 top-0 z-10 m-0 bg-amber-300 px-4 py-2 text-center text-[15px] font-semibold text-black">
+      Presenting Notes 2 was blocked. Press any key here to open it.
+    </p>
+  );
+
   const step = tour?.step ?? null;
   const go = (to: number | null) => channel.current?.postMessage({ type: "go", step: to } satisfies TourMessage);
   const next = () => go(step === null ? 0 : Math.min(step + 1, SCENES.length - 1));
@@ -70,6 +97,7 @@ export default function NotesWindow() {
       : "Press the right arrow here, or T in the app, to start at the first stop.";
     return (
       <Waiting title={title} body={body}>
+        {blocked}
         <ol className="mt-5 list-none space-y-1.5 p-0 text-[15px] text-muted">
           {SCENES.map((scene, i) => (
             <li key={scene.title} className="tabular flex gap-3">
@@ -89,6 +117,7 @@ export default function NotesWindow() {
 
   return (
     <div className="flex flex-col gap-5 overflow-y-auto bg-page p-6" style={style}>
+      {blocked}
       <header className="flex items-center gap-3">
         <span className="tabular text-sm text-muted">
           Stop {step + 1} of {SCENES.length}

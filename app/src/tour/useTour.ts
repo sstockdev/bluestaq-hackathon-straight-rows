@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useApp } from "../state/store";
-import { endTour, goToStop, openReference, openNotes, startTour, tourStartedAt } from "./control";
+import { endTour, goToStop, openPresenterWindows, openReference, referenceIsBlocked, referenceWasOpened, startTour, tourStartedAt } from "./control";
 import { endIntro, startIntro } from "./intro";
 import { openTourChannel, type TourMessage } from "./presenter";
 
@@ -9,6 +9,12 @@ function isTyping(event: KeyboardEvent): boolean {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+/** What the notes window is told: where the tour is, and whether the reference still needs opening. */
+function tourState(): TourMessage {
+  const { tourStep, introClip } = useApp.getState();
+  return { type: "state", step: tourStep, startedAt: tourStartedAt(), intro: introClip !== null, referenceBlocked: referenceIsBlocked() };
 }
 
 /**
@@ -33,11 +39,13 @@ export function useTour(): void {
       if (event.key === "t" || event.key === "T") {
         startTour();
       } else if (event.key === "n" || event.key === "N") {
-        // A browser may allow only one new window per key press. If the reference is blocked, C opens it.
-        openNotes();
-        openReference();
+        openPresenterWindows();
       } else if (event.key === "c" || event.key === "C") {
         openReference();
+        // Tell the notes window, which may be waiting to open the reference itself.
+        const channel = openTourChannel();
+        channel.postMessage(tourState());
+        channel.close();
       } else if (event.key === "p" || event.key === "P") {
         useApp.getState().setPresent(!present);
         if (!present && step === null) void startIntro();
@@ -67,13 +75,11 @@ export function useTour(): void {
 
   useEffect(() => {
     const channel = openTourChannel();
-    const tell = () => {
-      const { tourStep, introClip } = useApp.getState();
-      channel.postMessage({ type: "state", step: tourStep, startedAt: tourStartedAt(), intro: introClip !== null } satisfies TourMessage);
-    };
+    const tell = () => channel.postMessage(tourState());
     channel.onmessage = (event: MessageEvent<TourMessage>) => {
       const message = event.data;
       if (message.type === "hello") tell();
+      else if (message.type === "reference-opened") referenceWasOpened();
       else if (message.type !== "go") return;
       else if (message.step === null) endTour();
       else goToStop(message.step);

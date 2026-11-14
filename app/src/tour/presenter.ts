@@ -13,12 +13,16 @@ export interface TourState {
   startedAt: number | null;
   /** True while the opening plays, before the tour starts. */
   intro: boolean;
+  /** True when the browser blocked the reference window, so the notes window should open it. */
+  referenceBlocked: boolean;
 }
 
 export type TourMessage =
   | TourState
   /** A notes window has opened and wants the current state. */
   | { type: "hello" }
+  /** The notes window opened the reference that the app could not. */
+  | { type: "reference-opened" }
   /** The notes window asks for a stop, or null to end the tour. */
   | { type: "go"; step: number | null };
 
