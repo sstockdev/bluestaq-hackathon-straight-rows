@@ -4,7 +4,7 @@ import { SWEEP } from "../../data/limits";
 /** The sensitivity sweep as one number and one square per threshold move: grey changed nothing on dev, amber broke something. */
 export function SweepSquares() {
   const broke = SWEEP.moves - SWEEP.unchanged;
-  const full = `${SWEEP.thresholds} thresholds, each moved down and up by a quarter and rerun on dev. ${SWEEP.unchanged} moves change nothing. ${broke} break something, and they are the first rows below.`;
+  const full = `${SWEEP.thresholds} thresholds, each moved down and up by a quarter and rerun on dev. ${SWEEP.unchanged} moves change nothing. ${broke} break something. The first limit below names them.`;
   return (
     <div title={full} className="rounded-lg bg-panel-raised px-3 py-2.5">
       <p className="flex items-baseline gap-2">
