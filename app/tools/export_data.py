@@ -95,10 +95,15 @@ def steps(c):
     facts, span = c.facts, f"{hhmm(c.start, True)} to {hhmm(c.end, True)}"
     per = lambda values: ", ".join(f"{t} {v}" for t, v in values.items())
     if c.cls == "SPACE_WEATHER":
+        # The same test the confidence uses: is the middle tractor's drop close to what the sky predicts?
+        beyond = pd.Series(facts["drop_db"]).median() - facts["expected_sag_db"]
+        fit = ("Nothing is left over." if abs(beyond) <= config.CONF_SAG_MATCH_DB
+               else f"That is about {beyond:.1f} dB more than predicted, so the sky does not account for all of it." if beyond > 0
+               else f"That is about {-beyond:.1f} dB less than predicted, so the prediction does not fit this stretch.")
         return [
             f"Found a stretch where every working tractor is at least {config.SW_MIN_DROP_DB:.0f} dB below normal: {span}. Parked seconds are ignored.",
             f"Checked the sky. S4 over the stretch is {facts['s4_median']}, at or above {config.S4_SAG_MIN}, so the sky can cause a sag.",
-            f"The sky predicts {facts['expected_sag_db']} dB. The tractors lost {per(facts['drop_db'])} dB. Nothing is left over.",
+            f"The sky predicts {facts['expected_sag_db']} dB. The tractors lost {per(facts['drop_db'])} dB. {fit}",
             f"Result: space weather on {', '.join(c.tractors)}.",
         ]
     if c.cls == "JAMMING" or facts.get("kind") == "signal_loss":
