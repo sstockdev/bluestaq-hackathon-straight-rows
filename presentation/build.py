@@ -17,7 +17,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 
-from straightrows import config, features  # noqa: E402
+from straightrows import config, detectors, features  # noqa: E402
 
 MAX_POINTS = 1200
 TRACTORS = list(config.TRACTORS)
@@ -88,7 +88,53 @@ def story(f, label, start, end):
             f"at the north headland, then recovered. Its average signal held at {f.cn0[tractor].loc[start:last].median():.0f} dB-Hz.")
 
 
-def episode(f, label):
+DETECTORS = ["detect_space_weather", "detect_jamming", "detect_spoofing", "detect_equipment_fault", "detect_multipath"]
+
+
+def run_detectors(f):
+    """Candidates from every detector that exists so far."""
+    found = []
+    for name in DETECTORS:
+        if hasattr(detectors, name):
+            found += getattr(detectors, name)(f)
+    return found
+
+
+def steps(c):
+    """How the detector reached this candidate, in order, with its measured numbers."""
+    facts, span = c.facts, f"{hhmm(c.start, True)} to {hhmm(c.end, True)}"
+    per = lambda values: ", ".join(f"{t} {v}" for t, v in values.items())
+    if c.cls == "SPACE_WEATHER":
+        return [
+            f"Found a stretch where every working tractor is at least {config.SW_MIN_DROP_DB:.0f} dB below normal: {span}. Parked seconds are ignored.",
+            f"Checked the sky. S4 over the stretch is {facts['s4_median']}, at or above {config.S4_SAG_MIN}, so the sky can cause a sag.",
+            f"The sky predicts {facts['expected_sag_db']} dB. The tractors lost {per(facts['drop_db'])} dB. Nothing is left over.",
+            f"Result: space weather on {', '.join(c.tractors)}.",
+        ]
+    if c.cls == "JAMMING" or facts.get("kind") == "signal_loss":
+        report = facts["rfi"]
+        rfi = (f"{report['id']} arrived {report['delay_min']} min after the start, {report['distance_km']} km from the farm. That supports jamming."
+               if report else "No interference report arrived. Reports are often missing, so that counts for nothing.")
+        verdict = (f"{len(c.tractors)} tractors qualify, so this is jamming on {', '.join(c.tractors)}." if c.cls == "JAMMING"
+                   else f"Only {c.tractors[0]} qualifies. One machine alone could be its own hardware, so this is reported as an equipment fault.")
+        return [
+            f"Found a stretch where some working tractor has at least {config.JAM_TRIGGER_DB:.0f} dB of unexplained loss: {span}.",
+            f"The sky explains {facts['expected_sag_db']} dB here (S4 {facts['s4_median']}). Median unexplained loss per tractor: {per(facts['excess_db'])} dB.",
+            f"Kept the tractors at or above {config.JAM_MEMBER_DB} dB. {verdict}",
+            rfi,
+        ]
+    return [f"Found {span} on {', '.join(c.tractors)}."]
+
+
+def found_in(cands, a, b):
+    """Candidates that overlap the drawn window, longest first, multipath capped so the list stays readable."""
+    inside = [c for c in cands if c.start < b and c.end > a]
+    inside.sort(key=lambda c: (c.cls == "MULTIPATH", -(c.end - c.start).total_seconds()))
+    return [{"cls": c.cls, "start": c.start.timestamp(), "end": c.end.timestamp(), "tractors": c.tractors,
+             "kind": c.facts.get("kind"), "steps": steps(c)} for c in inside[:12]]
+
+
+def episode(f, label, cands):
     start, end = pd.Timestamp(label["start"]), pd.Timestamp(label["end"])
     a, b = window_for(start, end, label["class"])
     step = max(1, math.ceil((b - a).total_seconds() / MAX_POINTS))
@@ -122,14 +168,16 @@ def episode(f, label):
                  "km": round(distance_km(*f.farm_center, r.centerLat, r.centerLon), 1)}
                 for r in reports.itertuples()],
         "story": story(f, label, start, end),
+        "found": found_in(cands, a, b),
     }
 
 
 def main():
     f = features.build_features(ROOT / "data")
     labels = json.loads((ROOT / "data/labels/train_episodes.json").read_text())["episodes"]
+    cands = run_detectors(f)
     payload = {
-        "episodes": [episode(f, label) for label in labels],
+        "episodes": [episode(f, label, cands) for label in labels],
         "thresholds": {
             "sagMin": config.S4_SAG_MIN, "jamTrigger": config.JAM_TRIGGER_DB, "jamMember": config.JAM_MEMBER_DB,
             "spoofXte": config.SPOOF_XTE_M, "mpGap": config.MP_GAP_DB, "faultGap": config.FAULT_GAP_DB,
