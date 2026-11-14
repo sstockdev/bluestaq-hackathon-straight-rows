@@ -1,10 +1,11 @@
 import clsx from "clsx";
-import { Lightbulb, ListChecks, TriangleAlert, type LucideIcon } from "lucide-react";
+import { Lightbulb, ListChecks, TriangleAlert, Workflow, type LucideIcon } from "lucide-react";
 import { useApp, type PanelId } from "../state/store";
 import { Panel } from "../ui/Panel";
 
 const ITEMS: { id: PanelId; label: string; icon: LucideIcon }[] = [
   { id: "detections", label: "Detections", icon: ListChecks },
+  { id: "how", label: "How", icon: Workflow },
   { id: "why", label: "Why", icon: Lightbulb },
   { id: "limits", label: "Limits", icon: TriangleAlert },
 ];

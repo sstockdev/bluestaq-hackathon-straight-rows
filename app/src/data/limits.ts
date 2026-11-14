@@ -14,6 +14,8 @@ export type LimitGroup = "threshold" | "detector" | "app";
 export interface Limit {
   id: string;
   group: LimitGroup;
+  /** The limit in a few words, for the row. The fields below are the full text, shown on hover. */
+  brief: { case: string; wrong: string; fix: string };
   title: string;
   /** What goes wrong. */
   wrong: string;
@@ -35,6 +37,7 @@ export const LIMIT_GROUPS: { id: LimitGroup; title: string }[] = [
 export const LIMITS: Limit[] = [
   {
     id: "jam-trigger",
+    brief: { case: "Jamming trigger 6 to 7.5 dB", wrong: "Weakest jam splits, 3 false", fix: "More weak-jam labels" },
     group: "threshold",
     title: "Jamming trigger, 6 dB",
     wrong: "The weakest jamming episode in dev splits into pieces, and three false positives appear.",
@@ -43,6 +46,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "jam-member",
+    brief: { case: "Affected cut 4.5 to 5.6 dB", wrong: "That jam is missed", fix: "Per-satellite C/N0" },
     group: "threshold",
     title: "Affected cut, 4.5 dB",
     wrong: "One tractor drops out of that same episode, and the episode is missed.",
@@ -51,6 +55,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "fault-gap",
+    brief: { case: "Antenna gap 12 to 9 dB", wrong: "10 false faults", fix: "Per-satellite C/N0" },
     group: "threshold",
     title: "Antenna dropout gap, 12 dB",
     wrong: "Storm and jamming noise counts as dropouts, and ten false faults are reported.",
@@ -59,6 +64,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "weak-jammer",
+    brief: { case: "Jammer under 6 dB", wrong: "Missed", fix: "Per-satellite C/N0" },
     group: "detector",
     title: "A jammer weaker than any in dev",
     wrong: "It is not detected.",
@@ -67,6 +73,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "one-storm",
+    brief: { case: "A storm unlike May 5", wrong: "Storm and jamming swap", fix: "A second storm" },
     group: "detector",
     title: "The sag model rests on one storm day",
     wrong: "A storm is reported as jamming, or a jammer is hidden inside a storm.",
@@ -75,6 +82,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "s4-late",
+    brief: { case: "S4 late or missing", wrong: "Storm start unexplained, or max 0.40", fix: "Finer S4" },
     group: "detector",
     title: "S4 arrives late or is missing",
     wrong: "A late sample makes the first 15 minutes of a storm look unexplained. With no S4 at all, the detection is still reported, with confidence capped at 0.40 and evidence that says so.",
@@ -83,6 +91,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "one-machine",
+    brief: { case: "One machine alone", wrong: "Called a fault, max 0.45", fix: "A second antenna" },
     group: "detector",
     title: "One machine loses signal alone",
     wrong: "It is reported as an equipment fault at confidence 0.45 or less. A jammer that reaches only one tractor is reported the same way.",
@@ -91,6 +100,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "spoof-jump",
+    brief: { case: "Spoofer that jumps", wrong: "Late start", fix: "IMU or odometry" },
     group: "detector",
     title: "A spoofer that jumps",
     wrong: "The reported start is late.",
@@ -99,6 +109,7 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "multipath-latitude",
+    brief: { case: "Multipath while spoofed", wrong: "Wrong spot", fix: "Site survey" },
     group: "detector",
     title: "Multipath is located by reported latitude",
     wrong: "The recurring spot is looked for at the wrong latitude.",
@@ -107,14 +118,16 @@ export const LIMITS: Limit[] = [
   },
   {
     id: "simulated-farm",
+    brief: { case: "Simulated farm", wrong: "Surroundings are drawn, no photo", fix: "Real telemetry" },
     group: "app",
     title: "The farm is simulated",
-    wrong: "The field is drawn as a plain patch on an empty map. Its coordinates do not match a real field: half of that rectangle is a neighborhood on the east side of Casselton, so no aerial photo is shown.",
+    wrong: "The fields, roads, town blocks, and yard buildings around the field are an illustration. Nothing in the dataset says what surrounds it. The field's coordinates do not match a real field: half of that rectangle is a neighborhood on the east side of Casselton, so no aerial photo is shown.",
     when: "Always. The telemetry comes from a simulator that placed its field near the town.",
     fix: "Telemetry from real machines, with the boundary of the field they worked.",
   },
   {
     id: "drift-scale",
+    brief: { case: "Spoofing drift", wrong: `Drawn ${DRIFT_EXAGGERATION}x larger`, fix: "Meters are in the evidence" },
     group: "app",
     title: "Spoofing drift is drawn larger than real",
     wrong: `The drawn path leaves its row ${DRIFT_EXAGGERATION} times farther than the tractor did.`,

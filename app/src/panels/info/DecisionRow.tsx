@@ -1,26 +1,48 @@
 import clsx from "clsx";
-import { Check, ChevronDown, FlaskConical, MapPin, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { Check, FlaskConical, MapPin, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import type { Decision } from "../../data/types";
 import { showDetection } from "../../tour/showDetection";
+import { DECISION_BRIEFS } from "./decisionBriefs";
 import { DECISION_EPISODES, type DecisionEpisode } from "./decisionEpisodes";
 
-/** One design decision. Closed it shows the title; open it shows the choice, what was rejected, the evidence, and the limitation. */
-export function DecisionCard({ decision, open, onToggle }: { decision: Decision; open: boolean; onToggle: () => void }) {
+/**
+ * One design decision. Closed it reads at a glance: a short title, what was
+ * chosen, what was rejected, and the number that backs it. Clicking it opens
+ * the full reasoning from decisions.json.
+ */
+export function DecisionRow({ decision, open, onToggle }: { decision: Decision; open: boolean; onToggle: () => void }) {
+  const brief = DECISION_BRIEFS[decision.id];
   const episode = DECISION_EPISODES[decision.id];
   return (
     <li className={clsx("rounded-lg border", open ? "border-faint bg-panel-raised/60" : "border-line")}>
-      <button onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-3 px-3 py-2.5 text-left">
-        <span className="tabular w-5 shrink-0 font-condensed text-lg font-semibold leading-tight text-faint">{decision.id}</span>
-        <span className="flex-1">
-          <span className="block text-[14px] font-medium leading-snug">{decision.title}</span>
-          {decision.in_demo && (
-            <span className="mt-1 inline-block rounded-full bg-accent/20 px-2 py-0.5 text-[11px] font-medium text-ink ring-1 ring-accent/60">
-              In the demo
-            </span>
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        title={open ? undefined : "Open the full reasoning"}
+        className="grid w-full cursor-pointer grid-cols-[1.25rem_1fr_auto] items-center gap-x-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-panel-raised/60"
+      >
+        <span className="tabular self-start font-condensed text-lg font-semibold leading-tight text-faint">{decision.id}</span>
+        <span>
+          <span className="flex items-center gap-2 text-[13.5px] font-medium leading-snug">
+            {brief?.title ?? decision.title}
+            {decision.in_demo && (
+              <span className="rounded-full bg-accent/20 px-1.5 text-[10px] font-medium leading-4 text-ink ring-1 ring-accent/60">demo</span>
+            )}
+          </span>
+          {brief && (
+            <>
+              <Mark icon={Check} tone="text-emerald-400">{brief.chosen}</Mark>
+              <Mark icon={X} tone="text-rose-400">{brief.rejected}</Mark>
+            </>
           )}
         </span>
-        <ChevronDown size={16} aria-hidden className={clsx("mt-0.5 shrink-0 text-muted", open && "rotate-180")} />
+        {brief && (
+          <span className="text-right">
+            <span className="tabular block font-condensed text-[18px] font-semibold leading-tight">{brief.stat}</span>
+            <span className="block text-[11px] leading-tight text-muted">{brief.note}</span>
+          </span>
+        )}
       </button>
 
       {open && (
@@ -54,7 +76,17 @@ export function DecisionCard({ decision, open, onToggle }: { decision: Decision;
   );
 }
 
-/** One labeled part of an open card. */
+/** One line under the title: a green check for what was chosen, a red cross for what was rejected. */
+function Mark({ icon: Icon, tone, children }: { icon: LucideIcon; tone: string; children: string }) {
+  return (
+    <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
+      <Icon size={12} strokeWidth={2.5} aria-hidden className={clsx("shrink-0", tone)} />
+      {children}
+    </span>
+  );
+}
+
+/** One labeled part of an open row. */
 function Part({ icon: Icon, label, tone, children }: { icon: LucideIcon; label: string; tone: string; children: ReactNode }) {
   return (
     <section className="border-t border-line pt-2.5">

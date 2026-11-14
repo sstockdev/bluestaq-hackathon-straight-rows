@@ -27,11 +27,8 @@ export function TimeChart({ spec, detection }: { spec: ChartSpec; detection: Det
 
   return (
     <figure className="m-0">
-      <figcaption className="mb-1.5">
-        <p>
-          <span className="text-[13px] font-semibold">{spec.title}</span>
-          <span className="ml-2 text-xs text-faint">{spec.unit}</span>
-        </p>
+      <figcaption className="mb-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1" title={spec.unit}>
+        <span className="text-[13px] font-semibold">{spec.title}</span>
         <ChartLegend detection={detection} dashed={dashed?.name} />
       </figcaption>
       {/* A click focuses one of the chart's inner layers. Only the chart itself should show a focus ring. */}
@@ -94,7 +91,7 @@ export function TimeChart({ spec, detection }: { spec: ChartSpec; detection: Det
 /** The tractors by color, the affected ones in brighter text, and the dashed line when the chart has one. */
 function ChartLegend({ detection, dashed }: { detection: Detection; dashed?: string }) {
   return (
-    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
       {TRACTORS.map((id) => (
         <span key={id} className={detection.tractors.includes(id) ? "flex items-center gap-1.5" : "flex items-center gap-1.5 text-faint"}>
           <Dot color={TRACTOR_COLOR[id].color} />

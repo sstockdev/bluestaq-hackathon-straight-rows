@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import Map from "react-map-gl/maplibre";
 import { useApp } from "../state/store";
 import { cameraBounds, fieldPadding } from "./camera";
-import MapCredit from "./MapCredit";
+import CursorReadout from "./CursorReadout";
 import MapLayers from "./MapLayers";
 import { mapStyle } from "./mapStyle";
 
@@ -47,11 +47,13 @@ export default function FieldMap() {
         dragRotate={false}
         pitchWithRotate={false}
         touchPitch={false}
+        // The arrow keys scrub the timeline, so the map must not also pan on them.
+        keyboard={false}
         maxZoom={19}
       >
         {loaded && <MapLayers center={index.field.center} />}
+        {loaded && <CursorReadout start={index.field.center} />}
       </Map>
-      <MapCredit />
     </div>
   );
 }

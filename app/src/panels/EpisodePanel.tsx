@@ -1,42 +1,39 @@
 import clsx from "clsx";
 import { ChevronDown } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import type { Detection, Thresholds } from "../data/types";
+import type { Detection, Rules, Thresholds } from "../data/types";
 import { CAUSES } from "../lib/causes";
 import { useApp, useSelected } from "../state/store";
-import { ConfidenceMeter } from "../ui/ConfidenceMeter";
+import { ConfidenceMeter, type MeterTerm } from "../ui/ConfidenceMeter";
 import { Panel } from "../ui/Panel";
 import { LeadChart, MoreCharts } from "./episode/EpisodeCharts";
 import { EpisodeHeader } from "./episode/EpisodeHeader";
 import { EvidenceRows } from "./episode/EvidenceRows";
 import { Steps } from "./episode/Steps";
+import { confidenceTerms } from "./how/flows";
 
 /**
- * The selected detection: what it is, what to do, how confident the detector
- * is and why, and the one chart that shows it. The evidence sentences, the
+ * The selected detection: what to do, how confident the detector is and why in
+ * a few chips, and the one chart that shows it. The evidence sentences, the
  * detector's steps, and the other charts wait behind a Details toggle.
  * Renders nothing when no detection is selected.
  */
 export default function EpisodePanel() {
   const detection = useSelected();
   const thresholds = useApp((s) => s.index?.thresholds);
+  const rules = useApp((s) => s.index?.rules);
   const dev = useApp((s) => s.day?.kind === "dev");
   const select = useApp((s) => s.select);
-  if (!detection || !thresholds) return null;
+  if (!detection || !thresholds || !rules) return null;
 
   const cause = CAUSES[detection.cls];
   return (
     <Panel className="w-[420px] max-h-full overflow-y-auto">
       <EpisodeHeader detection={detection} dev={dev} onClose={() => select(null)} />
 
-      <div className="border-l-[3px] px-4 py-3" style={{ borderColor: cause.color }}>
-        <p className="text-xs text-muted">Recommended action</p>
-        <p className="text-[17px] font-semibold leading-snug">{cause.action}</p>
-      </div>
-
       <Section title="Confidence">
         {/* The key remounts the meter for each detection, which replays its fill. */}
-        <ConfidenceMeter key={detection.id} value={detection.confidence} terms={detection.terms} color={cause.color} />
+        <ConfidenceMeter key={detection.id} value={detection.confidence} base={rules.confidence.base} terms={meterTerms(detection, rules)} color={cause.color} />
       </Section>
       <Section>
         <LeadChart detection={detection} thresholds={thresholds} />
@@ -45,6 +42,20 @@ export default function EpisodePanel() {
       <Details key={detection.id} detection={detection} thresholds={thresholds} />
     </Panel>
   );
+}
+
+/**
+ * A detection's confidence terms with a few words each. The words come from the
+ * How panel's list, matched on the detector's reason. A reason that list does
+ * not know keeps its own first clause.
+ */
+function meterTerms(detection: Detection, rules: Rules): MeterTerm[] {
+  const known = confidenceTerms(detection.cls, rules);
+  return detection.terms.map(([reason, weight]) => {
+    const term = known.find((t) => t.reason === reason && rules.confidence.terms[detection.cls][t.key] === weight);
+    const own = reason.split(",")[0];
+    return { label: term?.label ?? own[0].toUpperCase() + own.slice(1), weight, reason };
+  });
 }
 
 /** The rest of what is known about a detection, closed until asked for. */

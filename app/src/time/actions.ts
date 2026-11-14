@@ -25,6 +25,12 @@ export function stepDetection(step: -1 | 1): void {
   if (next) select(next);
 }
 
+/** Move the clock by a number of seconds, back when negative. The clock stops at either end of the day. */
+export function scrub(seconds: number): void {
+  const { clock, setClock } = useApp.getState();
+  setClock(clock + seconds);
+}
+
 /** Start or pause playback. Starting at the end of the day goes back to its start first. */
 export function togglePlay(): void {
   const { day, clock, playing, setClock, setPlaying } = useApp.getState();

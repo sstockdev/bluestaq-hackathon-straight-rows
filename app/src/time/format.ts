@@ -14,9 +14,13 @@ export function stretchLabel(start: number, end: number, midnight: number): stri
   return `${dayClock(start, midnight, seconds)} to ${dayClock(end, midnight, seconds)}, ${duration(end - start)}`;
 }
 
-/** A playback speed in words: how much field time passes in one real second. */
+/**
+ * A playback speed as a multiple of real time, the way a video player writes
+ * it, and in words for the hover: how long a full day takes to play.
+ */
 export function speedName(speed: number): { short: string; long: string } {
-  if (speed === 1) return { short: "Real time", long: "Real time" };
-  const amount = speed < 60 ? `${speed} s` : `${speed / 60} min`;
-  return { short: amount, long: `${amount} per second` };
+  const seconds = DAY_SECONDS / speed;
+  const takes = seconds < 120 ? `${Math.round(seconds)} s` : duration(Math.round(seconds / 60) * 60);
+  if (speed === 1) return { short: "1x", long: `Real time. A full day takes ${takes}.` };
+  return { short: `${speed}x`, long: `${speed} times real time. A full day plays in ${takes}.` };
 }

@@ -5,7 +5,7 @@ python app/tools/export_data.py
 
 Three kinds of file come out, in the shapes app/src/data/types.ts defines:
 
-  index.json                   the days, the field, the thresholds, the dev scoreboard, the decisions
+  index.json                   the days, the field, the thresholds, the rules, the dev scoreboard, the decisions
   day-YYYY-MM-DD.json          one UTC day: a track per tractor every 5 s, the sky, and what was detected
   episode-<detection id>.json  finer samples around one detection that is not multipath
 
@@ -316,6 +316,32 @@ def thresholds():
     }
 
 
+def rules():
+    """The windows, limits, and confidence weights the How panel prints, so the app copies no number by hand."""
+    def event(merge_gap_s, min_s):
+        return {"mergeGapS": merge_gap_s, "minS": min_s}
+    return {
+        "workingSpeed": config.WORKING_SPEED_MPS, "smoothS": config.SMOOTH_CN0_S, "maxDetections": config.MAX_DETECTIONS,
+        "events": {
+            "spaceWeather": event(config.SW_MERGE_GAP_S, config.SW_MIN_DURATION_S),
+            "jamming": event(config.JAM_MERGE_GAP_S, config.JAM_MIN_DURATION_S),
+            "spoofing": event(config.SPOOF_MERGE_GAP_S, config.SPOOF_MIN_DURATION_S),
+            "antenna": event(config.FAULT_MERGE_GAP_S, config.FAULT_MIN_DURATION_S),
+            "link": event(config.LINK_MERGE_GAP_S, config.LINK_MIN_DURATION_S),
+        },
+        "gradedSpread": config.GRADED_SPREAD_DB, "rfiMaxDelayS": config.RFI_MAX_DELAY_S,
+        "spoofSmoothS": config.SPOOF_SMOOTH_S, "faultWindowS": config.FAULT_WINDOW_S,
+        "multipath": {"minS": config.MP_MIN_S, "maxS": config.MP_MAX_S, "minRecur": config.MP_MIN_RECUR},
+        "confidence": {
+            "base": config.CONF_BASE, "min": config.CONF_MIN, "max": config.CONF_MAX,
+            "noS4Cap": config.CONF_NO_S4_CAP, "singleLossCap": config.CONF_SINGLE_MACHINE_LOSS_CAP,
+            "sagMatchDb": config.CONF_SAG_MATCH_DB, "uniformDb": config.CONF_UNIFORM_DB,
+            "strongRfi": config.CONF_STRONG_RFI, "healthySignalDb": config.CONF_HEALTHY_SIGNAL_DB,
+            "neighborDropout": config.CONF_NEIGHBOR_DROPOUT, "terms": config.CONF_TERMS,
+        },
+    }
+
+
 def write(name, payload):
     """Write one JSON file and print its size. json refuses NaN here, so none can reach the app."""
     path = OUT / name
@@ -343,13 +369,13 @@ def main():
     for a in pd.date_range(config.DEV_START, config.EVAL_END, freq="1D", inclusive="left"):
         dev = a < pd.Timestamp(config.DEV_END)
         kind = "dev" if dev else "eval"
-        days.append({"date": f"{a:%Y-%m-%d}", "label": a.strftime("%B %-d"), "kind": kind, "t0": epoch(a)})
+        days.append({"date": f"{a:%Y-%m-%d}", "label": f"{a:%B} {a.day}", "kind": kind, "t0": epoch(a)})
         write(f"day-{a:%Y-%m-%d}.json",
               day_file(f, a, kind, cands, labels, baseline_dev if dev else baseline_eval,
                        baseline_result["false_positives"] if dev else None))
 
     write("index.json", {
-        "days": days, "field": field(f), "thresholds": thresholds(),
+        "days": days, "field": field(f), "thresholds": thresholds(), "rules": rules(),
         "score": {"ours": summary(ours_result), "baseline": summary(baseline_result)},
         "decisions": json.loads((ROOT / "decisions.json").read_text()),
     })

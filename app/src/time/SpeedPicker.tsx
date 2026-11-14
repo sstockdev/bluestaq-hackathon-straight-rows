@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { SPEEDS, useApp } from "../state/store";
 import { speedName } from "./format";
 
-/** Choose how much field time passes in each real second of playback. */
+/** Choose how many times faster than real time the day plays. */
 export function SpeedPicker() {
   const speed = useApp((s) => s.speed);
   const setSpeed = useApp((s) => s.setSpeed);

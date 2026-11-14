@@ -6,7 +6,7 @@ import { TRACTORS } from "../lib/causes";
 export type Bounds = [number, number, number, number];
 
 /** The space the panels take on each side of a large window, in pixels. */
-export const PANEL_ROOM = { left: 470, right: 440, top: 70, bottom: 215 };
+export const PANEL_ROOM = { left: 470, right: 440, top: 70, bottom: 245 };
 
 /**
  * Padding that keeps the field clear of the panels. On a small window the

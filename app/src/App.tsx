@@ -3,6 +3,7 @@ import FieldMap from "./map/FieldMap";
 import DecisionsPanel from "./panels/DecisionsPanel";
 import DetectionsPanel from "./panels/DetectionsPanel";
 import EpisodePanel from "./panels/EpisodePanel";
+import HowPanel from "./panels/HowPanel";
 import LimitsPanel from "./panels/LimitsPanel";
 import Rail from "./panels/Rail";
 import { useApp, type PanelId } from "./state/store";
@@ -17,6 +18,7 @@ import { Panel } from "./ui/Panel";
 /** Which component each rail icon opens. */
 const PANELS: Record<PanelId, ComponentType> = {
   detections: DetectionsPanel,
+  how: HowPanel,
   why: DecisionsPanel,
   limits: LimitsPanel,
 };

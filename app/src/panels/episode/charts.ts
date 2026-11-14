@@ -5,7 +5,7 @@ import { axis, tractorRows, valueRange, type ChartRow } from "./series";
 /** Everything TimeChart needs to draw one chart. */
 export interface ChartSpec {
   title: string;
-  /** Shown beside the title, such as "dB-Hz". */
+  /** What the chart measures, shown when the title is hovered. */
   unit: string;
   /** Written after a value in the tooltip, such as " dB". */
   suffix: string;
@@ -28,12 +28,12 @@ export function signalChart(episode: Episode): ChartSpec {
   const rows = tractorRows(episode, "cn0", { extra: { predicted } });
   const [low] = valueRange(rows, [...TRACTORS, "predicted"]);
   return {
-    title: "Signal strength",
-    unit: "mean C/N0, dB-Hz",
+    title: "Signal strength, dB-Hz",
+    unit: "Mean C/N0 per tractor, against the level S4 predicts.",
     suffix: " dB-Hz",
     digits: 1,
     rows,
-    dashed: { key: "predicted", name: "What S4 predicts" },
+    dashed: { key: "predicted", name: "S4 predicts" },
     marks: [{ y: normal, label: `normal ${normal.toFixed(1)}` }],
     axis: axis(Math.floor(low - 1), normal + 2.5),
   };
@@ -47,14 +47,14 @@ export function lossChart(episode: Episode, thresholds: Thresholds, spoofing: bo
   const rows = tractorRows(episode, "excess");
   const [low, high] = valueRange(rows, TRACTORS);
   const marks = spoofing
-    ? [{ y: thresholds.spoofMaxExcess, label: `healthy below ${thresholds.spoofMaxExcess} dB` }]
+    ? [{ y: thresholds.spoofMaxExcess, label: `healthy < ${thresholds.spoofMaxExcess} dB` }]
     : [
-        { y: thresholds.jamTrigger, label: `jamming starts at ${thresholds.jamTrigger} dB` },
-        { y: thresholds.jamMember, label: `a tractor counts from ${thresholds.jamMember} dB`, below: true },
+        { y: thresholds.jamTrigger, label: `trigger ${thresholds.jamTrigger} dB` },
+        { y: thresholds.jamMember, label: `affected ≥ ${thresholds.jamMember} dB`, below: true },
       ];
   return {
-    title: "Unexplained loss",
-    unit: "drop minus what S4 predicts, dB",
+    title: "Unexplained loss, dB",
+    unit: "The drop minus what S4 predicts.",
     suffix: " dB",
     digits: 1,
     rows,
@@ -69,13 +69,13 @@ export function driftChart(episode: Episode, thresholds: Thresholds): ChartSpec 
   const rows = tractorRows(episode, "xte");
   const [, high] = valueRange(rows, TRACTORS);
   return {
-    title: "Cross-track error",
-    unit: "distance off the planned row, m",
+    title: "Drift off the row, m",
+    unit: "Cross-track error: the distance off the planned row.",
     suffix: " m",
     digits: 2,
     rows,
     dashed: null,
-    marks: [{ y: thresholds.spoofXte, label: `spoofing checked from ${thresholds.spoofXte} m` }],
+    marks: [{ y: thresholds.spoofXte, label: `limit ${thresholds.spoofXte} m` }],
     axis: axis(0, Math.max(high, thresholds.spoofXte * 3)),
   };
 }
@@ -86,13 +86,13 @@ export function dropoutChart(episode: Episode, thresholds: Thresholds): ChartSpe
   const [, high] = valueRange(rows, TRACTORS);
   const limit = Math.round(thresholds.faultFrac * 100);
   return {
-    title: "Dropout share",
-    unit: "% of the surrounding 10 minutes",
+    title: "Dropout share, %",
+    unit: "The share of the surrounding 10 minutes with a dropout.",
     suffix: "%",
     digits: 0,
     rows,
     dashed: null,
-    marks: [{ y: limit, label: `fault above ${limit}%` }],
+    marks: [{ y: limit, label: `limit ${limit}%` }],
     axis: axis(0, Math.max(high, limit * 2)),
   };
 }
@@ -101,8 +101,8 @@ export function dropoutChart(episode: Episode, thresholds: Thresholds): ChartSpe
 export function linkChart(episode: Episode): ChartSpec {
   const minutes = Math.ceil((episode.n * episode.step) / 60);
   return {
-    title: "Correction link",
-    unit: "% of each minute with the link up",
+    title: "Correction link up, %",
+    unit: "The share of each minute with the RTK correction link up.",
     suffix: "%",
     digits: 0,
     rows: tractorRows(episode, "link", { scale: 100, maxPoints: minutes }),

@@ -15,7 +15,7 @@ export function ScoreLine() {
         <Total name="Starter baseline" score={score.baseline} muted />
       </div>
       <p className="mt-2 text-xs text-faint">
-        Out of {FULL_SCORE}, on the {score.ours.total} dev episodes the thresholds were chosen on.
+        Out of {FULL_SCORE}, on the {score.ours.total} dev episodes the thresholds were set on.
       </p>
     </div>
   );
@@ -28,6 +28,9 @@ function Total({ name, score, muted }: { name: string; score: ScoreSummary; mute
       <p className={`tabular font-condensed text-[30px] font-semibold leading-tight ${muted ? "text-muted" : ""}`}>
         {score.diagnostic.toFixed(2)}
       </p>
+      <div className="mb-1.5 mt-1 h-1.5 overflow-hidden rounded-full bg-line">
+        <div className={`h-full rounded-full ${muted ? "bg-faint" : "bg-emerald-400"}`} style={{ width: `${(score.diagnostic / FULL_SCORE) * 100}%` }} />
+      </div>
       <p className="tabular text-xs text-muted">
         {score.caught} of {score.total} caught, {score.falsePositives} false
       </p>

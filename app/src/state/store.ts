@@ -3,7 +3,7 @@ import { loadDay, loadIndex } from "../data/load";
 import type { Day, Detection, Index } from "../data/types";
 
 /** The floating panels the left rail can open. */
-export const PANEL_IDS = ["detections", "why", "limits"] as const;
+export const PANEL_IDS = ["detections", "how", "why", "limits"] as const;
 export type PanelId = (typeof PANEL_IDS)[number];
 
 export interface AppState {
@@ -57,7 +57,8 @@ export const useApp = create<AppState>((set, get) => ({
       const wanted = index.days.find((d) => d.date === params.get("day"));
       const first = wanted ?? index.days.find((d) => d.kind === "eval") ?? index.days[0];
       const seconds = Number(params.get("t"));
-      await get().setDay(first.date, wanted && params.has("t") ? first.t0 + seconds : undefined);
+      const asked = wanted && params.has("t") && Number.isFinite(seconds);
+      await get().setDay(first.date, asked ? first.t0 + seconds : undefined);
       const selected = get().day?.detections.find((d) => d.id === params.get("sel"));
       if (selected) set({ selectedId: selected.id });
       const panel = PANEL_IDS.find((id) => id === params.get("panel"));
@@ -72,9 +73,10 @@ export const useApp = create<AppState>((set, get) => ({
       const day = await loadDay(date);
       // Start a few minutes before the day's first detection, where something is about to happen.
       const firstStart = day.detections[0]?.start ?? day.working[0]?.[0] ?? day.t0;
+      const end = day.t0 + day.n * day.step - 1;
       set({
         day,
-        clock: clock ?? Math.max(day.t0, firstStart - 300),
+        clock: Math.min(Math.max(clock ?? firstStart - 300, day.t0), end),
         selectedId: null,
         playing: false,
       });

@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useApp } from "../state/store";
-import { DecisionCard } from "./info/DecisionCard";
+import { DecisionRow } from "./info/DecisionRow";
 import { InfoPanel } from "./info/InfoPanel";
 import { ScoreLine } from "./info/ScoreLine";
 
 /**
  * The dev score, then the design decisions behind the detector, the ones shown
- * in the demo first. A decision opens when clicked, one at a time.
+ * in the demo first. Each row reads at a glance, and opens to the full reasoning
+ * when clicked, one at a time.
  */
 export default function DecisionsPanel() {
   const decisions = useApp((s) => s.index?.decisions);
@@ -18,11 +19,11 @@ export default function DecisionsPanel() {
   if (ordered.length === 0) return null;
 
   return (
-    <InfoPanel title="Why" note={`${ordered.length} design decisions`} width="w-[380px]">
+    <InfoPanel title="Why" note={`${ordered.length} design decisions`} width="w-[440px]">
       <ScoreLine />
-      <ol className="flex flex-col gap-2">
+      <ol className="flex flex-col gap-1.5">
         {ordered.map((decision) => (
-          <DecisionCard
+          <DecisionRow
             key={decision.id}
             decision={decision}
             open={decision.id === openId}

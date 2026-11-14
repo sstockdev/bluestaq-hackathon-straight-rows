@@ -1,9 +1,6 @@
 import type { StyleSpecification } from "maplibre-gl";
 import type { Feature, FeatureCollection, LineString } from "geojson";
 
-/** Credit for the land outline. Shown in the cursor readout. */
-export const ATTRIBUTION = "Land outline: Natural Earth.";
-
 /**
  * The folder the basemap files are served from, as a full address on this
  * site. MapLibre loads some files in a worker, where a relative path would
@@ -58,7 +55,7 @@ export function mapStyle(fieldCenter: [number, number]): StyleSpecification {
     version: 8,
     projection: { type: "mercator" },
     sources: {
-      land: { type: "geojson", data: `${BASEMAP}land.geojson`, attribution: ATTRIBUTION },
+      land: { type: "geojson", data: `${BASEMAP}land.geojson` },
       "world-grid": { type: "geojson", data: worldGrid() },
       "local-grid": { type: "geojson", data: localGrid(fieldCenter) },
     },

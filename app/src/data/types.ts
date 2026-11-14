@@ -18,6 +18,7 @@ export interface Index {
   /** [lon, lat] of the middle of the field, and its [west, south, east, north] box while working. */
   field: { center: [number, number]; bounds: [number, number, number, number] };
   thresholds: Thresholds;
+  rules: Rules;
   /** Dev-day results from the organizers' scorer. */
   score: { ours: ScoreSummary; baseline: ScoreSummary };
   decisions: Decision[];
@@ -46,6 +47,46 @@ export interface Thresholds {
   faultGap: number;
   faultFrac: number;
   mpGap: number;
+}
+
+/** How flagged seconds become one event: gaps up to mergeGapS are bridged, and events under minS are dropped. */
+export interface EventRule {
+  mergeGapS: number;
+  minS: number;
+}
+
+/** The detector's windows, limits, and confidence weights, as the How panel prints them. All from config.py. */
+export interface Rules {
+  /** A tractor is working above this speed, in m/s. */
+  workingSpeed: number;
+  /** The median window on the signal drop, in seconds. */
+  smoothS: number;
+  /** The most detections a submission may hold. */
+  maxDetections: number;
+  events: Record<"spaceWeather" | "jamming" | "spoofing" | "antenna" | "link", EventRule>;
+  /** Jamming loss that differs by this many dB between tractors counts as graded. */
+  gradedSpread: number;
+  /** An interference report counts when it arrives within this many seconds of the start. */
+  rfiMaxDelayS: number;
+  spoofSmoothS: number;
+  /** The window dropout seconds are counted over, in seconds. */
+  faultWindowS: number;
+  /** A multipath dip lasts minS to maxS seconds and needs minRecur dips at one latitude. */
+  multipath: { minS: number; maxS: number; minRecur: number };
+  confidence: {
+    base: number;
+    min: number;
+    max: number;
+    noS4Cap: number;
+    singleLossCap: number;
+    sagMatchDb: number;
+    uniformDb: number;
+    strongRfi: number;
+    healthySignalDb: number;
+    neighborDropout: number;
+    /** What each piece of evidence adds or subtracts, keyed by cause and then by the term's name in config.py. */
+    terms: Record<Cause, Record<string, number>>;
+  };
 }
 
 export interface ScoreSummary {
