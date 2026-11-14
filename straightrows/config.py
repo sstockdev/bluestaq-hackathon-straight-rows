@@ -52,6 +52,7 @@ SPOOF_MIN_DURATION_S = 300
 FAULT_GAP_DB = 12.0                # a dropout second: cn0 - min_cn0 at or above this
 FAULT_WINDOW_S = 600
 FAULT_DROPOUT_FRAC = 0.12          # TRN-09 runs at 0.24; healthy 0.03; storm 0.06
+FAULT_MERGE_GAP_S = 120
 FAULT_MIN_DURATION_S = 600
 LINK_MERGE_GAP_S = 300             # TRN-10: the link flaps in bursts of 1-16 s
 LINK_MIN_DURATION_S = 300

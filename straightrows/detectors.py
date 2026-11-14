@@ -194,3 +194,47 @@ def detect_spoofing(f):
                 "worst_fix": _worst_fix(f, start, end, [tractor]),
             }))
     return found
+
+
+def _fault_facts(f, tractor, start, end, kind, dropout):
+    """Measurements for a single-machine fault. `dropout` is the per-second dropout flag for every tractor."""
+    others = [t for t in f.gap.columns if t != tractor]
+    sky = _sky_facts(f, start, end)
+    return {
+        "kind": kind,
+        "dropout_frac": round(float(_span(dropout[tractor], start, end).mean()), 2),
+        "neighbor_dropout_frac": round(float(_span(dropout[others], start, end).mean().max()), 2),
+        "min_cn0_p05": round(float(_span(f.min_cn0[tractor], start, end).quantile(0.05)), 1),
+        "sats_min": int(_span(f.num_sats[tractor], start, end).min()),
+        "cn0_median": round(float(_span(f.cn0[tractor], start, end).median()), 1),
+        "link_down_frac": round(float(1 - _span(f.link_ok[tractor], start, end).mean()), 2),
+        "float_frac": round(float((_span(f.fix_state[tractor], start, end) != "RTK_FIXED").mean()), 2),
+        "s4_median": sky["s4_median"],
+        "s4_available": sky["s4_available"],
+        "in_storm": bool(sky["expected_sag_db"] and sky["expected_sag_db"] > 0),
+    }
+
+
+def detect_equipment_fault(f):
+    """A problem on one machine that its neighbors do not share.
+
+    Antenna: the weakest satellite keeps dropping far below the average signal.
+    A dropout second is one where cn0 - min_cn0 reaches FAULT_GAP_DB, and the fault
+    is a stretch where dropout seconds make up FAULT_DROPOUT_FRAC of a moving window.
+
+    Correction link: base_link_ok goes false in short bursts. Bursts closer together
+    than LINK_MERGE_GAP_S are one fault.
+    """
+    dropout = (f.gap >= config.FAULT_GAP_DB) & f.working
+    dropout_share = dropout.astype(float).rolling(config.FAULT_WINDOW_S, center=True, min_periods=1).mean()
+    found = []
+    for tractor in f.gap.columns:
+        frequent = dropout_share[tractor] >= config.FAULT_DROPOUT_FRAC
+        for start, end in runs(frequent, config.FAULT_MERGE_GAP_S, config.FAULT_MIN_DURATION_S):
+            found.append(Candidate("EQUIPMENT_FAULT", start, end, [tractor],
+                                   _fault_facts(f, tractor, start, end, "antenna", dropout)))
+        link_down = f.working[tractor] & ~f.link_ok[tractor]
+        for start, end in runs(link_down, config.LINK_MERGE_GAP_S, config.LINK_MIN_DURATION_S):
+            found.append(Candidate("EQUIPMENT_FAULT", start, end, [tractor],
+                                   _fault_facts(f, tractor, start, end, "link", dropout)))
+    return found
