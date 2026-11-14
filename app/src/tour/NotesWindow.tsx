@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { openTourChannel, type TourMessage, type TourState } from "./presenter";
 import { SCENES } from "./scenes";
 
+/** Where the notes' text size is remembered between visits. */
+const SCALE_KEY = "straight-rows-notes-scale";
+
 /** The whole demo, in seconds: the sum of the stops. */
 const TOTAL = SCENES.reduce((sum, scene) => sum + scene.seconds, 0);
 
@@ -19,6 +22,15 @@ const minutes = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.
 export default function NotesWindow() {
   const [tour, setTour] = useState<TourState | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  // Chrome keeps one zoom level per site, so zooming the app for the projector zooms these notes too.
+  // The presenter sets the size back with - and +, and the choice is remembered.
+  const [scale, setScale] = useState(() => Number(window.localStorage.getItem(SCALE_KEY)) || 1);
+  const resize = (factor: number) =>
+    setScale((before) => {
+      const next = factor === 0 ? 1 : Math.min(2, Math.max(0.3, before * factor));
+      window.localStorage.setItem(SCALE_KEY, String(next));
+      return next;
+    });
   const channel = useRef<BroadcastChannel | null>(null);
 
   useEffect(() => {
@@ -46,6 +58,9 @@ export default function NotesWindow() {
       if (event.key === "ArrowRight" || event.key === " ") next();
       else if (event.key === "ArrowLeft") previous();
       else if (event.key === "Escape") go(null);
+      else if (event.key === "-") resize(0.9);
+      else if (event.key === "=" || event.key === "+") resize(1 / 0.9);
+      else if (event.key === "0") resize(0);
       else return;
       event.preventDefault();
     };
@@ -77,7 +92,7 @@ export default function NotesWindow() {
   const upcoming = SCENES[step + 1];
 
   return (
-    <div className="flex h-full flex-col gap-5 overflow-y-auto bg-page p-6">
+    <div className="flex flex-col gap-5 overflow-y-auto bg-page p-6" style={{ zoom: scale, height: `${100 / scale}%` }}>
       <header className="flex items-center gap-3">
         <span className="tabular text-sm text-muted">
           Stop {step + 1} of {SCENES.length}
@@ -97,12 +112,19 @@ export default function NotesWindow() {
         </span>
       </header>
 
-      <h1 className="font-condensed text-[38px] font-semibold leading-tight">{scene.title}</h1>
+      <div>
+        <h1 className="font-condensed text-[38px] font-semibold leading-tight">{scene.title}</h1>
+        <p className="mt-1 text-[15px] leading-snug text-muted">{scene.caption}</p>
+      </div>
 
       <p className="rounded-lg bg-accent/15 px-4 py-3 text-[16px] leading-snug ring-1 ring-accent/50">
         <span className="mr-2 text-xs font-semibold text-muted">On screen</span>
         {scene.cue}
       </p>
+
+      {scene.commands && (
+        <pre className="m-0 rounded-lg bg-panel-raised px-4 py-3 font-mono text-[15px] leading-relaxed text-ink">{scene.commands.join("\n")}</pre>
+      )}
 
       <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
         {scene.notes.map((line) => (
@@ -113,7 +135,10 @@ export default function NotesWindow() {
       </ul>
 
       <footer className="mt-auto flex items-center gap-3 border-t border-line pt-4">
-        <span className="text-sm text-muted">{upcoming ? `Next: ${upcoming.title}` : "Last stop. Questions are next."}</span>
+        <span className="text-sm text-muted">
+          {upcoming ? `Next: ${upcoming.title}` : "Last stop. Questions are next."}
+          <span className="ml-3 text-faint">- and + resize</span>
+        </span>
         <button onClick={previous} disabled={step === 0} className="ml-auto flex h-9 items-center gap-1 rounded-md border border-line px-3 text-sm text-ink hover:bg-panel-raised disabled:opacity-35">
           <ChevronLeft size={16} aria-hidden />
           Previous

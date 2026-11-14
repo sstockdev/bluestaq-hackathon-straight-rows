@@ -14,7 +14,6 @@ import { SkyLane } from "./SkyLane";
 import { SpeedPicker } from "./SpeedPicker";
 import { TractorLane } from "./TractorLane";
 import { useScrub } from "./useScrub";
-import { useTimeKeys } from "./useTimeKeys";
 import { useWidth } from "./useWidth";
 
 /** Sizes in pixels. The gutter holds the lane names; the right margin holds the S4 threshold's value. */
@@ -37,8 +36,6 @@ export default function TimeBar() {
   const index = useApp((s) => s.index);
   const selectedId = useApp((s) => s.selectedId);
   const [box, width] = useWidth<HTMLDivElement>();
-  // The bar is always on screen, so the time shortcuts live here and work with any panel open.
-  useTimeKeys();
 
   const blocks = useMemo(() => (day ? dayBlocks(day) : null), [day]);
   const episodes = useMemo(() => placeEpisodes(blocks?.detections ?? []), [blocks]);

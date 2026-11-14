@@ -24,6 +24,18 @@ export function fieldPadding(width: number, height: number): Required<PaddingOpt
 }
 
 /**
+ * Padding for presentation mode: room for the left panel when one is open and
+ * for the episode panel when a detection is selected, and a small margin
+ * otherwise. The field always keeps at least 40% of the width.
+ */
+export function presentPadding(width: number, panelOpen: boolean, detectionOpen: boolean): Required<PaddingOptions> {
+  const left = panelOpen ? 484 : 20;
+  const right = detectionOpen ? 444 : 20;
+  const x = Math.min(1, (width * 0.6) / (left + right));
+  return { left: left * x, right: right * x, top: 44, bottom: 44 };
+}
+
+/**
  * The box the camera fits: the field, stretched to take in wherever the
  * tractors go that day. They park just outside the field, and without this
  * they would sit under the time bar.

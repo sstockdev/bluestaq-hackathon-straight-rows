@@ -20,6 +20,7 @@ export function useUrlSync() {
   const playing = useApp((s) => s.playing);
   const selectedId = useApp((s) => s.selectedId);
   const panel = useApp((s) => s.panel);
+  const present = useApp((s) => s.present);
 
   useEffect(() => {
     if (!date || t0 === undefined || playing) return;
@@ -29,6 +30,7 @@ export function useUrlSync() {
       params.set("t", String(Math.round(clock - t0)));
       if (selectedId) params.set("sel", selectedId);
       if (panel) params.set("panel", panel);
+      if (present) params.set("present", "1");
       try {
         window.history.replaceState(null, "", `?${params}`);
       } catch {
@@ -36,5 +38,5 @@ export function useUrlSync() {
       }
     }, SETTLE_MS);
     return () => window.clearTimeout(timer);
-  }, [date, t0, clock, playing, selectedId, panel]);
+  }, [date, t0, clock, playing, selectedId, panel, present]);
 }

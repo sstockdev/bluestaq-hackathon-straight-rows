@@ -22,6 +22,13 @@ export interface AppState {
   panel: PanelId | null;
   /** The guided tour's current stop, or null when the tour is off. */
   tourStep: number | null;
+  /**
+   * Presentation mode, for a projector. The browser is zoomed in until the text
+   * can be read from the back of a room, which leaves a small window. So this
+   * mode drops the rail, the title, the time bar, and the cursor readout, and
+   * refits the map around whatever is open.
+   */
+  present: boolean;
 
   start: () => Promise<void>;
   setDay: (date: string, clock?: number) => Promise<void>;
@@ -32,6 +39,7 @@ export interface AppState {
   select: (detection: Detection | null) => void;
   openPanel: (panel: PanelId | null) => void;
   setTourStep: (step: number | null) => void;
+  setPresent: (present: boolean) => void;
 }
 
 export const SPEEDS = [1, 10, 60, 300, 900];
@@ -46,6 +54,7 @@ export const useApp = create<AppState>((set, get) => ({
   selectedId: null,
   panel: "detections",
   tourStep: null,
+  present: false,
 
   start: async () => {
     try {
@@ -63,6 +72,7 @@ export const useApp = create<AppState>((set, get) => ({
       if (selected) set({ selectedId: selected.id });
       const panel = PANEL_IDS.find((id) => id === params.get("panel"));
       if (panel) set({ panel });
+      if (params.has("present")) set({ present: true });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : String(error) });
     }
@@ -97,6 +107,7 @@ export const useApp = create<AppState>((set, get) => ({
     set(detection ? { selectedId: detection.id, clock: detection.start, playing: false } : { selectedId: null }),
   openPanel: (panel) => set({ panel }),
   setTourStep: (tourStep) => set({ tourStep }),
+  setPresent: (present) => set({ present }),
 }));
 
 /** The selected detection object, or null. */

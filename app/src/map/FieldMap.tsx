@@ -7,6 +7,7 @@ import { useApp } from "../state/store";
 import { cameraBounds, fieldPadding } from "./camera";
 import CursorReadout from "./CursorReadout";
 import MapLayers from "./MapLayers";
+import PresentCamera from "./PresentCamera";
 import { mapStyle } from "./mapStyle";
 
 /** Report a map error in the console without stopping the app. */
@@ -22,6 +23,7 @@ function reportMapError(event: ErrorEvent) {
 export default function FieldMap() {
   const index = useApp((s) => s.index);
   const center = index?.field.center;
+  const present = useApp((s) => s.present);
   // Built once: handing the map a new style object would make it reload.
   const style = useMemo(() => (center ? mapStyle(center) : null), [center]);
   // MapLibre throws if anything changes the map before its style has loaded,
@@ -52,7 +54,8 @@ export default function FieldMap() {
         maxZoom={19}
       >
         {loaded && <MapLayers center={index.field.center} />}
-        {loaded && <CursorReadout start={index.field.center} />}
+        {loaded && !present && <CursorReadout start={index.field.center} />}
+        {loaded && <PresentCamera />}
       </Map>
     </div>
   );

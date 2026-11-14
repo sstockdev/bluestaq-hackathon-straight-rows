@@ -5,9 +5,9 @@ import { showDetection } from "./showDetection";
 /** One stop of the guided tour. */
 export interface Scene {
   title: string;
-  /** One sentence, shown under the title. */
+  /** One sentence on what the stop shows. Shown under the title in the presenter's notes window. */
   caption: string;
-  /** Shell commands shown under the caption, one per line. */
+  /** Shell commands to run at this stop, one per line. Shown in the notes window. */
   commands?: string[];
   /** How long to spend on this stop, in seconds. The stops add up to the five-minute demo. */
   seconds: number;

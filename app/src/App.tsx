@@ -10,6 +10,7 @@ import { useApp, type PanelId } from "./state/store";
 import { useUrlSync } from "./state/useUrlSync";
 import TimeBar from "./time/TimeBar";
 import { usePlayback } from "./time/usePlayback";
+import { useTimeKeys } from "./time/useTimeKeys";
 import TourCaption from "./tour/TourCaption";
 import { useTour } from "./tour/useTour";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
@@ -27,17 +28,22 @@ const PANELS: Record<PanelId, ComponentType> = {
  * The whole screen: the map underneath, and floating over it a title card, the
  * icon rail with one open panel, the episode panel on the right, and the time
  * bar along the bottom. Every component reads what it needs from the store.
+ * Presentation mode (the P key) keeps only the map, the open panel, and the
+ * episode panel, so the page can be zoomed in for a projector.
  */
 export default function App() {
   const ready = useApp((s) => s.index !== null && s.day !== null);
   const error = useApp((s) => s.error);
   const panel = useApp((s) => s.panel);
+  const present = useApp((s) => s.present);
   const start = useApp((s) => s.start);
 
   useEffect(() => {
     void start();
   }, [start]);
   usePlayback();
+  // The time shortcuts live here and not in the time bar, so they still work when the bar is hidden.
+  useTimeKeys();
   useUrlSync();
   useTour();
 
@@ -55,16 +61,16 @@ export default function App() {
         <div className="flex min-h-0 flex-1 items-start gap-3">
           {/* A definite height here lets an open panel cap itself with max-h-full and scroll. */}
           <div className="flex h-full min-h-0 flex-col gap-3">
-            <TitleCard />
+            {!present && <TitleCard />}
             <div className="flex min-h-0 flex-1 items-start gap-3">
-              <Rail />
+              {!present && <Rail />}
               {OpenPanel && <OpenPanel />}
             </div>
           </div>
           <div className="flex-1" />
           <EpisodePanel />
         </div>
-        <TimeBar />
+        {!present && <TimeBar />}
       </div>
       <TourCaption />
     </div>

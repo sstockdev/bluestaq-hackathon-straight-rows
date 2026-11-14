@@ -12,7 +12,7 @@ function isTyping(event: KeyboardEvent): boolean {
 
 /**
  * The guided tour's keys: T starts it at the first stop, N opens the
- * presenter's notes in their own window, the right and left arrows move
+ * presenter's notes in their own window, P turns presentation mode on and off, the right and left arrows move
  * between stops, and Escape ends it. While the tour runs, the arrows and
  * Escape go to the tour and nowhere else.
  *
@@ -29,6 +29,8 @@ export function useTour(): void {
         startTour();
       } else if (event.key === "n" || event.key === "N") {
         openNotes();
+      } else if (event.key === "p" || event.key === "P") {
+        useApp.getState().setPresent(!useApp.getState().present);
       } else if (step === null) {
         return;
       } else if (event.key === "ArrowRight") {
@@ -41,7 +43,7 @@ export function useTour(): void {
         return;
       }
       event.preventDefault();
-      event.stopPropagation();
+      event.stopImmediatePropagation();
     };
     // Listen in the capture phase so the tour sees the key before a slider or the time bar does.
     window.addEventListener("keydown", onKey, true);

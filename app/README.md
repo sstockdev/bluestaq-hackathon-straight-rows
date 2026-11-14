@@ -26,6 +26,7 @@ npm run dev                       # http://localhost:5173
 | `[`, `]` | Previous or next detection |
 | `T` | Start the seven-stop tour. The arrows move it and Escape ends it |
 | `N` | Open the speaker notes in a second window |
+| `P` | Presentation mode, for a projector. Zoom the browser in afterwards |
 
 ## Code
 
