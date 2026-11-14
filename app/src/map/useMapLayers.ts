@@ -3,6 +3,7 @@ import { useApp, useSelected } from "../state/store";
 import { fieldLayers } from "./layers/field";
 import { hexLayers } from "./layers/hexes";
 import { multipathLayers } from "./layers/multipath";
+import { placeLayers } from "./layers/places";
 import { reportLayers } from "./layers/reports";
 import { rowLayers } from "./layers/rows";
 import { spoofingLayers } from "./layers/spoofing";
@@ -26,6 +27,7 @@ export function useMapLayers(onHover: (hovered: HoveredTractor | null) => void):
   const states = tractorStates(day, clock);
   return [
     ...fieldLayers(index.field.bounds),
+    ...placeLayers(day),
     ...(shown.hexes ? hexLayers(day, range, clock, index.thresholds) : []),
     ...(shown.rows ? rowLayers(day, clock) : []),
     ...(shown.reports ? reportLayers(day, clock, index.field.center) : []),
