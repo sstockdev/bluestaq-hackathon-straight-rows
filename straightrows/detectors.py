@@ -122,7 +122,7 @@ def detect_jamming(f):
         excess = _span(working_excess, start, end).median().dropna()   # one number per working tractor
         members = sorted(t for t, value in excess.items() if value >= config.JAM_MEMBER_DB)
         if not members:
-            members = [excess.idxmax()]
+            continue                                             # scattered bursts: no tractor is affected over the stretch
         facts = {
             **_sky_facts(f, start, end),
             "excess_db": _rounded(excess),
@@ -156,8 +156,8 @@ def ramp_onset(rel, trigger):
     """
     later = rel.loc[trigger:]
     doubled = later[later >= 2 * config.SPOOF_XTE_M]
-    if doubled.empty:
-        return trigger, "trigger"
+    if doubled.empty or doubled.index[0] == trigger:
+        return trigger, "trigger"        # never doubled, or already past double when first seen: no ramp to measure
     return trigger - (doubled.index[0] - trigger), "extrapolated"
 
 
@@ -200,8 +200,10 @@ def _fault_facts(f, tractor, start, end, kind, dropout):
     """Measurements for a single-machine fault. `dropout` is the per-second dropout flag for every tractor."""
     others = [t for t in f.gap.columns if t != tractor]
     sky = _sky_facts(f, start, end)
+    outages = runs(~_span(f.link_ok[tractor], start, end))
     return {
         "kind": kind,
+        "longest_link_outage_s": int(max(((b - a).total_seconds() for a, b in outages), default=0)),
         "dropout_frac": round(float(_span(dropout[tractor], start, end).mean()), 2),
         "neighbor_dropout_frac": round(float(_span(dropout[others], start, end).mean().max()), 2),
         "min_cn0_p05": round(float(_span(f.min_cn0[tractor], start, end).quantile(0.05)), 1),
@@ -230,7 +232,7 @@ def detect_equipment_fault(f):
     dropout_share = dropout.astype(float).rolling(config.FAULT_WINDOW_S, center=True, min_periods=1).mean()
     found = []
     for tractor in f.gap.columns:
-        frequent = dropout_share[tractor] >= config.FAULT_DROPOUT_FRAC
+        frequent = (dropout_share[tractor] >= config.FAULT_DROPOUT_FRAC) & f.working[tractor]
         for start, end in runs(frequent, config.FAULT_MERGE_GAP_S, config.FAULT_MIN_DURATION_S):
             found.append(Candidate("EQUIPMENT_FAULT", start, end, [tractor],
                                    _fault_facts(f, tractor, start, end, "antenna", dropout)))
