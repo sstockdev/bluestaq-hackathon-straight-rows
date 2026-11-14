@@ -238,3 +238,43 @@ def detect_equipment_fault(f):
             found.append(Candidate("EQUIPMENT_FAULT", start, end, [tractor],
                                    _fault_facts(f, tractor, start, end, "link", dropout)))
     return found
+
+
+def detect_multipath(f):
+    """Short dips of the weakest satellite that keep happening at the same latitude.
+
+    A dip is 10 to 40 seconds where cn0 - min_cn0 reaches MP_GAP_DB. Storm noise
+    produces dips like that anywhere in the field, so only dips at the tractor's
+    recurring spot are reported: the latitude where most of its dips happen. A dip
+    that repeats at one place on every pass is something fixed beside the field.
+    Every pass is reported as its own short detection.
+    """
+    found = []
+    for tractor in f.gap.columns:
+        dipping = ((f.gap[tractor] >= config.MP_GAP_DB) & f.working[tractor]).astype(float)
+        dipping = dipping.rolling(config.MP_BRIDGE_S, center=True, min_periods=1).median() > 0.5   # close 1-2 s holes
+        dips = [(a, b) for a, b in runs(dipping)
+                if config.MP_MIN_S <= (b - a).total_seconds() <= config.MP_MAX_S]
+        if not dips:
+            continue
+        spots = [round(float(_span(f.lat[tractor], a, b).median()), config.MP_SPOT_DECIMALS) for a, b in dips]
+        counts = pd.Series(spots).value_counts()
+        home, recurrences = float(counts.index[0]), int(counts.iloc[0])
+        if recurrences < config.MP_MIN_RECUR:
+            continue                                             # nothing recurs, so nothing fixed is causing it
+        for (start, end), spot in zip(dips, spots):
+            if spot != home:
+                continue
+            sag = float(f.sag.loc[start])
+            found.append(Candidate("MULTIPATH", start, end, [tractor], {
+                "duration_s": int((end - start).total_seconds()),
+                "min_cn0_db": round(float(_span(f.min_cn0[tractor], start, end).median()), 1),
+                "cn0_db": round(float(_span(f.cn0[tractor], start, end).median()), 1),
+                "spot_lat": home,
+                "lon": round(float(_span(f.lon[tractor], start, end).median()), 5),
+                "recurrences": recurrences,
+                "s4": _number(f.s4.loc[start]),
+                "s4_available": not pd.isna(f.s4.loc[start]),
+                "in_storm": sag > 0,
+            }))
+    return found
