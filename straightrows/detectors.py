@@ -136,3 +136,61 @@ def detect_jamming(f):
         else:
             found.append(Candidate("EQUIPMENT_FAULT", start, end, members, {**facts, "kind": "signal_loss"}))
     return found
+
+
+def _work_start(f, tractor, moment):
+    """The first second of the working stretch that contains `moment`."""
+    before = f.working[tractor].loc[:moment]
+    parked = before.index[~before.to_numpy()]
+    return before.index[0] if len(parked) == 0 else parked[-1] + ONE_SECOND
+
+
+def ramp_onset(rel, trigger):
+    """Estimate when a steady drift began.
+
+    `rel` crossed SPOOF_XTE_M at `trigger`. A drift that climbs at a constant
+    rate and later reaches twice that level at t2 took as long to get from zero
+    to the trigger as it took from the trigger to t2, so it began near
+    trigger - (t2 - trigger). If it never doubles, the trigger time is the best
+    estimate available.
+    """
+    later = rel.loc[trigger:]
+    doubled = later[later >= 2 * config.SPOOF_XTE_M]
+    if doubled.empty:
+        return trigger, "trigger"
+    return trigger - (doubled.index[0] - trigger), "extrapolated"
+
+
+def detect_spoofing(f):
+    """One tractor drifts off its line while its signal stays healthy.
+
+    Each tractor's cross-track error is compared with the other working tractors,
+    because a storm makes every machine's guidance noisy at once. The signal check
+    (unexplained loss under SPOOF_MAX_EXCESS_DB) keeps jamming out: a jammed
+    tractor also wanders, but its signal collapses.
+    """
+    smooth = f.xte.rolling(config.SPOOF_SMOOTH_S, center=True, min_periods=1).median()
+    found = []
+    for tractor in smooth.columns:
+        others = [t for t in smooth.columns if t != tractor]
+        others_xte = smooth[others].where(f.working[others]).median(axis=1).fillna(0.0)
+        rel = smooth[tractor] - others_xte                       # meters worse than the other machines
+        flagged = f.working[tractor] & (rel >= config.SPOOF_XTE_M) & (f.excess[tractor] < config.SPOOF_MAX_EXCESS_DB)
+        for trigger, end in runs(flagged, config.SPOOF_MERGE_GAP_S, config.SPOOF_MIN_DURATION_S):
+            onset, method = ramp_onset(_span(rel, trigger, end), trigger)
+            start = max(onset, _work_start(f, tractor, trigger))
+            minutes_to_trigger = (trigger - start).total_seconds() / 60
+            sky = _sky_facts(f, start, end)
+            found.append(Candidate("SPOOFING", start, end, [tractor], {
+                "trigger_time": trigger.isoformat(),
+                "onset_method": method,
+                "xte_max_m": round(float(_span(smooth[tractor], start, end).max()), 2),
+                "xte_rate_m_per_min": round(config.SPOOF_XTE_M / minutes_to_trigger, 2) if minutes_to_trigger > 0 else None,
+                "others_xte_m": round(float(_span(others_xte, trigger, end).median()), 2),
+                "excess_db": round(float(_span(f.excess[tractor], trigger, end).median()), 1),
+                "s4_median": sky["s4_median"],
+                "s4_available": sky["s4_available"],
+                "in_storm": bool(sky["expected_sag_db"] and sky["expected_sag_db"] > 0),
+                "worst_fix": _worst_fix(f, start, end, [tractor]),
+            }))
+    return found
