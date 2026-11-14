@@ -31,7 +31,7 @@
       "Kp as the storm test. Kp is planet-wide and arrives every 3 hours. On May 5 it read 5.7 from 06:00, while the farm's signal was normal until 09:45 apart from one 15-minute dip.",
       "Step detection on telemetry alone. A storm changes strength mid-episode (8 dB to 14 dB at 10:00 on May 5), and without S4 that step looks like a new event."
     ],
-    "evidence": "Fitted to the May 5 storm: 7.8 dB at S4 0.317, 9.6 at 0.418, 13.8 at 0.648, and 16.4 at 0.795, with residuals under 0.1 dB. S4 between 0.27 and 0.30 produced no sag. In the sensitivity sweep, moving the slope or the threshold by 25% changes nothing on dev.",
+    "evidence": "Fitted to the May 5 storm: 7.8 dB at S4 0.317, 9.6 at 0.418, 13.8 at 0.648, and 16.4 at 0.795, with residuals under 0.1 dB. Those values are measured against a normal level of 45.0 dB-Hz. The detector's own normal is a median over all three days, 44.8 dB-Hz, so inside the code the prediction runs about 0.2 dB above the measured drop. S4 between 0.27 and 0.30 produced no sag. In the sensitivity sweep, moving the slope or the threshold by 25% changes nothing on dev.",
     "limitation": "It rests on one storm day in one simulator. If S4 lagged the farm by one 15-minute sample, the start of a storm would look unexplained. A second storm, or S4 at a 1-minute cadence, would test both.",
     "in_demo": true
   },

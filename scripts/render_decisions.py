@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""Render decisions.json as the README's design decisions section.
+"""Render decisions.json as docs/DECISIONS.md.
 
-python scripts/render_decisions.py            # print the section
-python scripts/render_decisions.py --write    # replace the section in README.md
+python scripts/render_decisions.py            # print the decisions
+python scripts/render_decisions.py --write    # write docs/DECISIONS.md
 
-decisions.json is the single source: the README and the presentation page both read it.
+decisions.json is the single source: docs/DECISIONS.md and the map app both read it.
 """
 import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-START, END = "<!-- decisions:start -->", "<!-- decisions:end -->"
+INTRO = """# Design decisions
+
+The twelve decisions behind the detector. Each has what I chose, what I rejected, the evidence from the dev episodes, and its limitation.
+
+This file is generated from `decisions.json`. To change it, edit that file and run `python scripts/render_decisions.py --write`.
+"""
 
 
 def render(decisions):
@@ -34,12 +39,9 @@ def main():
     if "--write" not in sys.argv:
         print(section)
         return
-    readme = ROOT / "README.md"
-    text = readme.read_text()
-    before, rest = text.split(START, 1)
-    _, after = rest.split(END, 1)
-    readme.write_text(f"{before}{START}\n\n{section}\n{END}{after}")
-    print(f"Updated the decisions section of {readme}")
+    doc = ROOT / "docs" / "DECISIONS.md"
+    doc.write_text(f"{INTRO}\n{section}")
+    print(f"Wrote {doc}")
 
 
 if __name__ == "__main__":
