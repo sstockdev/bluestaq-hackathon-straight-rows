@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Score the starter baseline on the 12 labeled dev episodes.
+"""Score a detector on the 12 labeled dev episodes.
 
-python scripts/score_dev.py
-python scripts/score_dev.py --output dev_pred.json --json dev_score.json
+python scripts/score_dev.py                       # this repo's detector
+python scripts/score_dev.py --detector baseline   # the starter baseline, for comparison
+python scripts/score_dev.py --json dev_score.json
 
-baseline.py only looks at the evaluation window, and that window has no public
-answer key. This script runs the same detect() over the dev window (hours 0-48),
-writes the detections to dev_pred.json, and scores them against
-data/labels/train_episodes.json with the organizers' scorer.
+The evaluation window has no public answer key, so this runs the detector over
+the dev window (hours 0-48), writes the detections to dev_pred.json, and scores
+them against data/labels/train_episodes.json with the organizers' scorer.
 
 dev_pred.json is for scoring only. validate_submission.py rejects it because
 its detections sit outside the evaluation window.
@@ -23,6 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "submission"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -33,11 +34,15 @@ DEV_START = pd.Timestamp("2026-05-04T00:00:00Z")
 DEV_END = pd.Timestamp("2026-05-06T00:00:00Z")
 
 
-def detect_dev(data):
-    """Run baseline.detect() over the dev window."""
-    # detect() reads its window from these two module globals.
-    baseline.EVAL_START, baseline.EVAL_END = DEV_START, DEV_END
-    return baseline.detect(data)
+def detect_dev(data, detector="straightrows"):
+    """Detections over the dev window from the chosen detector."""
+    if detector == "baseline":
+        # baseline.detect() reads its window from these two module globals.
+        baseline.EVAL_START, baseline.EVAL_END = DEV_START, DEV_END
+        return baseline.detect(data)
+    from straightrows import pipeline
+    # Two dev days hold more multipath passes than one submission allows, so no cap here.
+    return pipeline.run(data, DEV_START, DEV_END, limit=None)
 
 
 def short(ts):
@@ -77,13 +82,14 @@ def main():
     parser.add_argument("--data", default=str(ROOT / "data"))
     parser.add_argument("--output", default=str(ROOT / "dev_pred.json"), help="where to write the dev detections")
     parser.add_argument("--json", dest="json_output", help="also write the full scoring result here")
+    parser.add_argument("--detector", choices=["straightrows", "baseline"], default="straightrows")
     args = parser.parse_args()
 
     labels = Path(args.data) / "labels/train_episodes.json"
     if not labels.exists():
         sys.exit(f"{labels} not found. Run: python scripts/get_data.py")
 
-    detections = detect_dev(args.data)
+    detections = detect_dev(args.data, args.detector)
     with open(args.output, "w") as f:
         json.dump({"detections": detections}, f, indent=2)
     print(f"Wrote {len(detections)} dev detections to {args.output}\n")
