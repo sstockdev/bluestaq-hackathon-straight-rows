@@ -89,6 +89,11 @@ def confidence(c):
     return round(score, 2)
 
 
+def _kp(facts, wording):
+    """The Kp clause for the sky sentence, or nothing when the Kp feed is missing."""
+    return "" if facts["kp_max"] is None else f" {wording} {facts['kp_max']} (global context only)."
+
+
 def _sky_line(facts, reading):
     """The feeds sentence, or the fallback when S4 was missing."""
     return NO_S4 if facts.get("s4_available") is False else reading
@@ -101,7 +106,7 @@ def _space_weather(c):
     return [
         f"Every working machine ({', '.join(c.tractors)}) sat about {drop:.1f} dB below its normal mean C/N0 from {_when(c.start)} to {_clock(c.end)}.",
         f"Per machine: {_per_machine(f['drop_db'])}. The spread is {f['spread_db']} dB, so the loss is the same everywhere, as a regional cause would be.",
-        _sky_line(f, f"S4 median {f['s4_median']} (max {f['s4_max']}) predicts {f['expected_sag_db']} dB of sag, which accounts for the drop. Kp reached {f['kp_max']} (global context only).{advisory}"),
+        _sky_line(f, f"S4 median {f['s4_median']} (max {f['s4_max']}) predicts {f['expected_sag_db']} dB of sag, which accounts for the drop.{_kp(f, 'Kp reached')}{advisory}"),
         f"Halt or run in degraded mode until S4 falls below {config.S4_SAG_MIN}. Loss beyond what S4 predicts would be reported separately as interference.",
     ]
 
@@ -126,7 +131,7 @@ def _jamming(c):
     return [
         f"{lead} mean C/N0 fell {f['drop_db'][lead]} dB below normal at {_when(c.start)} and stayed down until {_clock(c.end)}; its fix degraded to {f['worst_fix'][lead]}.",
         f"Loss the sky does not explain on the other machines: {_per_machine(others)}. Machines at or above {config.JAM_MEMBER_DB} dB count as affected ({', '.join(c.tractors)}); the loss is {shape} (spread {f['spread_db']} dB).",
-        _sky_line(f, f"S4 {f['s4_median']} predicts {f['expected_sag_db']} dB of sag, leaving {f['excess_db'][lead]} dB on {lead} with no sky cause. {report} Kp {f['kp_max']} (global context only)."),
+        _sky_line(f, f"S4 {f['s4_median']} predicts {f['expected_sag_db']} dB of sag, leaving {f['excess_db'][lead]} dB on {lead} with no sky cause. {report}{_kp(f, 'Kp')}"),
         action,
     ]
 
