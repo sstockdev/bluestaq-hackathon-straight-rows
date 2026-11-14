@@ -1,13 +1,18 @@
 import { useApp } from "../state/store";
+import { endIntro } from "./intro";
 import { SCENES } from "./scenes";
 
 /** When the tour was started, in epoch milliseconds, for the notes window's timer. Null while the tour is off. */
 let startedAt: number | null = null;
 export const tourStartedAt = () => startedAt;
 
-/** Go to a tour stop by its index (0 is the first) and set the screen up for it. An index outside the tour does nothing. */
+/**
+ * Go to a tour stop by its index (0 is the first) and set the screen up for it.
+ * An index outside the tour does nothing. The opening stops if it was playing.
+ */
 export function goToStop(step: number): void {
   if (step < 0 || step >= SCENES.length) return;
+  endIntro();
   if (useApp.getState().tourStep === null) startedAt = Date.now();
   useApp.getState().setTourStep(step);
   void SCENES[step].apply(() => useApp.getState().tourStep === step);

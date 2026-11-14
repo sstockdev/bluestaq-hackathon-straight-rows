@@ -11,6 +11,8 @@ import { useUrlSync } from "./state/useUrlSync";
 import TimeBar from "./time/TimeBar";
 import { usePlayback } from "./time/usePlayback";
 import { useTimeKeys } from "./time/useTimeKeys";
+import { useIntro } from "./tour/intro";
+import IntroCaption from "./tour/IntroCaption";
 import ReproduceCard from "./tour/ReproduceCard";
 import TourCaption from "./tour/TourCaption";
 import { useTour } from "./tour/useTour";
@@ -30,7 +32,8 @@ const PANELS: Record<PanelId, ComponentType> = {
  * icon rail with one open panel, the episode panel on the right, and the time
  * bar along the bottom. Every component reads what it needs from the store.
  * Presentation mode (the P key) keeps only the map, the open panel, and the
- * episode panel, so the page can be zoomed in for a projector.
+ * episode panel, so the page can be zoomed in for a projector. It opens on the
+ * tractors driving through one detection of each cause (see tour/intro.ts).
  */
 export default function App() {
   const ready = useApp((s) => s.index !== null && s.day !== null);
@@ -47,6 +50,7 @@ export default function App() {
   useTimeKeys();
   useUrlSync();
   useTour();
+  useIntro();
 
   if (error) return <Message title="The app's data is missing" body={error} />;
   if (!ready) return <Message title="Straight Rows" body="Loading the field." />;
@@ -75,6 +79,7 @@ export default function App() {
       </div>
       <ReproduceCard />
       <TourCaption />
+      <IntroCaption />
     </div>
   );
 }

@@ -11,6 +11,8 @@ export interface TourState {
   step: number | null;
   /** When the tour started, in epoch milliseconds. */
   startedAt: number | null;
+  /** True while the opening plays, before the tour starts. */
+  intro: boolean;
 }
 
 export type TourMessage =

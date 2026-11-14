@@ -29,6 +29,11 @@ export interface AppState {
    * refits the map around whatever is open.
    */
   present: boolean;
+  /**
+   * The opening that plays when presentation mode is turned on: which of the
+   * day's clips is playing (see tour/intro.ts), or null when it is off.
+   */
+  introClip: number | null;
 
   start: () => Promise<void>;
   setDay: (date: string, clock?: number) => Promise<void>;
@@ -40,6 +45,7 @@ export interface AppState {
   openPanel: (panel: PanelId | null) => void;
   setTourStep: (step: number | null) => void;
   setPresent: (present: boolean) => void;
+  setIntroClip: (introClip: number | null) => void;
 }
 
 export const SPEEDS = [1, 10, 60, 300, 900];
@@ -55,6 +61,7 @@ export const useApp = create<AppState>((set, get) => ({
   panel: "detections",
   tourStep: null,
   present: false,
+  introClip: null,
 
   start: async () => {
     try {
@@ -108,6 +115,7 @@ export const useApp = create<AppState>((set, get) => ({
   openPanel: (panel) => set({ panel }),
   setTourStep: (tourStep) => set({ tourStep }),
   setPresent: (present) => set({ present }),
+  setIntroClip: (introClip) => set({ introClip }),
 }));
 
 /** The selected detection object, or null. */

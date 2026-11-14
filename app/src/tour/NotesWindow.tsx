@@ -64,8 +64,12 @@ export default function NotesWindow() {
     return <Waiting title="Waiting for the app" body="Open the app in another window. These notes follow its tour." />;
   }
   if (step === null) {
+    const title = tour.intro ? "The opening is playing" : "The tour is not running";
+    const body = tour.intro
+      ? "Say who you are. The right arrow, here or in the app, starts the first stop and the timer."
+      : "Press the right arrow here, or T in the app, to start at the first stop.";
     return (
-      <Waiting title="The tour is not running" body="Press the right arrow here, or T in the app, to start at the first stop.">
+      <Waiting title={title} body={body}>
         <ol className="mt-5 list-none space-y-1.5 p-0 text-[15px] text-muted">
           {SCENES.map((scene, i) => (
             <li key={scene.title} className="tabular flex gap-3">

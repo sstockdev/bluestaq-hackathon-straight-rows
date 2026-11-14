@@ -27,7 +27,7 @@ npm run dev                       # http://localhost:5173
 | `T` | Start the eight-stop tour. The arrows move it and Escape ends it |
 | `N` | Open the two presenter windows: the speaker notes, and a reference with the five rules, the confidence weights, and the reasons behind the approach and the code |
 | `C` | Open the reference alone, if the browser blocked the second window |
-| `P` | Presentation mode, for a projector. Zoom the browser in afterwards |
+| `P` | Presentation mode, for a projector. Zoom the browser in afterwards. It opens on the tractors driving through one detection of each cause, until the right arrow starts the tour |
 
 ## Code
 

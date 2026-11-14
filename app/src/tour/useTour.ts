@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useApp } from "../state/store";
 import { endTour, goToStop, openReference, openNotes, startTour, tourStartedAt } from "./control";
+import { endIntro, startIntro } from "./intro";
 import { openTourChannel, type TourMessage } from "./presenter";
 
 /** True when the key press belongs to a field the user is typing in. */
@@ -17,6 +18,9 @@ function isTyping(event: KeyboardEvent): boolean {
  * between stops, and Escape ends it. While the tour runs, the arrows and
  * Escape go to the tour and nowhere else.
  *
+ * Turning presentation mode on outside the tour plays the opening (see
+ * intro.ts). The right arrow then starts the tour, and Escape stops the opening.
+ *
  * It also keeps a notes window in step: it tells the window which stop the
  * tour is on, and moves when the window asks.
  */
@@ -24,7 +28,7 @@ export function useTour(): void {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey || isTyping(event)) return;
-      const step = useApp.getState().tourStep;
+      const { tourStep: step, introClip, present } = useApp.getState();
 
       if (event.key === "t" || event.key === "T") {
         startTour();
@@ -35,7 +39,13 @@ export function useTour(): void {
       } else if (event.key === "c" || event.key === "C") {
         openReference();
       } else if (event.key === "p" || event.key === "P") {
-        useApp.getState().setPresent(!useApp.getState().present);
+        useApp.getState().setPresent(!present);
+        if (!present && step === null) void startIntro();
+        else endIntro();
+      } else if (introClip !== null && event.key === "ArrowRight") {
+        startTour();
+      } else if (introClip !== null && event.key === "Escape") {
+        endIntro();
       } else if (step === null) {
         return;
       } else if (event.key === "ArrowRight") {
@@ -57,7 +67,10 @@ export function useTour(): void {
 
   useEffect(() => {
     const channel = openTourChannel();
-    const tell = () => channel.postMessage({ type: "state", step: useApp.getState().tourStep, startedAt: tourStartedAt() } satisfies TourMessage);
+    const tell = () => {
+      const { tourStep, introClip } = useApp.getState();
+      channel.postMessage({ type: "state", step: tourStep, startedAt: tourStartedAt(), intro: introClip !== null } satisfies TourMessage);
+    };
     channel.onmessage = (event: MessageEvent<TourMessage>) => {
       const message = event.data;
       if (message.type === "hello") tell();
@@ -66,7 +79,7 @@ export function useTour(): void {
       else goToStop(message.step);
     };
     const stop = useApp.subscribe((state, before) => {
-      if (state.tourStep !== before.tourStep) tell();
+      if (state.tourStep !== before.tourStep || (state.introClip === null) !== (before.introClip === null)) tell();
     });
     return () => {
       stop();
