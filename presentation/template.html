@@ -164,9 +164,11 @@ function panels() {
     { title: "Sky: S4", sub: "Regional scintillation, sampled every 15 minutes. Vertical lines are interference reports.",
       lines: [{ values: ep.s4, color: "#8a6a00", bold: true, step: true }], zero: true, rfi: true,
       marks: [{ y: TH.sagMin, label: "sag begins " + TH.sagMin }] },
-    { title: "Weakest-satellite gap", sub: "Mean C/N0 minus the weakest satellite, in dB. Short bumps at the headland are multipath. Constant spikes on one tractor are an antenna fault.",
+    { title: "Weakest-satellite gap", sub: "Mean C/N0 minus the weakest satellite, in dB, worst value in each time step. Regular bumps on every tractor are the headland (multipath). One tractor spiking all the time is an antenna fault.",
       lines: lines("gap"), zero: true,
       marks: [{ y: TH.faultGap, label: "dropout " + TH.faultGap }, { y: TH.mpGap, label: "multipath " + TH.mpGap, dash: true }] },
+    { title: "Dropout share", sub: "Share of the surrounding 10 minutes in which the gap is 12 dB or more. This is what the antenna-fault detector reads.",
+      lines: lines("dropout"), zero: true, marks: [{ y: TH.faultFrac, label: "fault limit " + Math.round(TH.faultFrac * 100) + "%" }] },
     { title: "Correction link", sub: "Share of each time step with the RTK link up. 1 is up the whole step.",
       lines: lines("link"), fixed: [0, 1.05] },
   ];

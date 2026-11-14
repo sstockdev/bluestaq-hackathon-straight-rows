@@ -160,7 +160,7 @@ def found_in(cands, a, b):
              "kind": c.facts.get("kind"), "steps": steps(c)} for c in inside[:12]]
 
 
-def episode(f, label, cands):
+def episode(f, label, cands, dropout_share):
     start, end = pd.Timestamp(label["start"]), pd.Timestamp(label["end"])
     a, b = window_for(start, end, label["class"])
     step = max(1, math.ceil((b - a).total_seconds() / MAX_POINTS))
@@ -169,9 +169,11 @@ def episode(f, label, cands):
     mid = lambda frame: cut(frame).resample(rule).median()
     low = lambda frame: cut(frame).resample(rule).min()
     share = lambda frame: cut(frame).astype(float).resample(rule).mean()
+    high = lambda frame: cut(frame).resample(rule).max()
 
     cn0, min_cn0, drop, excess = mid(f.cn0), low(f.min_cn0), mid(f.drop), mid(f.excess)
-    xte, gap, sats = mid(f.xte), mid(f.gap), low(f.num_sats)
+    xte, gap, sats = mid(f.xte), high(f.gap), low(f.num_sats)
+    dropout = mid(dropout_share)
     work, link = share(f.working), share(f.link_ok)
     index = cn0.index
     reports = f.rfi[(f.rfi.ts >= a) & (f.rfi.ts <= b)] if len(f.rfi) else f.rfi
@@ -184,7 +186,8 @@ def episode(f, label, cands):
         "series": {
             t: {"cn0": values(cn0[t]), "min": values(min_cn0[t]), "drop": values(drop[t]),
                 "excess": values(excess[t]), "xte": values(xte[t]), "gap": values(gap[t]),
-                "sats": values(sats[t], 0), "work": values(work[t]), "link": values(link[t])}
+                "sats": values(sats[t], 0), "work": values(work[t]), "link": values(link[t]),
+                "dropout": values(dropout[t], 3)}
             for t in TRACTORS
         },
         "s4": values(f.s4.loc[a:b].resample(rule).last(), 3),
@@ -202,11 +205,13 @@ def main():
     f = features.build_features(ROOT / "data")
     labels = json.loads((ROOT / "data/labels/train_episodes.json").read_text())["episodes"]
     cands = run_detectors(f)
+    dropout_seconds = ((f.gap >= config.FAULT_GAP_DB) & f.working).astype(float)
+    dropout_share = dropout_seconds.rolling(config.FAULT_WINDOW_S, center=True, min_periods=1).mean()
     payload = {
-        "episodes": [episode(f, label, cands) for label in labels],
+        "episodes": [episode(f, label, cands, dropout_share) for label in labels],
         "thresholds": {
             "sagMin": config.S4_SAG_MIN, "jamTrigger": config.JAM_TRIGGER_DB, "jamMember": config.JAM_MEMBER_DB,
-            "spoofXte": config.SPOOF_XTE_M, "mpGap": config.MP_GAP_DB, "faultGap": config.FAULT_GAP_DB,
+            "spoofXte": config.SPOOF_XTE_M, "mpGap": config.MP_GAP_DB, "faultGap": config.FAULT_GAP_DB, "faultFrac": config.FAULT_DROPOUT_FRAC,
             "sagIntercept": config.SAG_INTERCEPT_DB, "sagSlope": config.SAG_SLOPE_DB,
         },
     }
