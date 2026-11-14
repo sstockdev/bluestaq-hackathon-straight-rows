@@ -77,7 +77,8 @@ def main():
     if multipath:
         found.set_title(f"plus {multipath} short multipath reports, one per headland pass", loc="right", fontsize=9, color=MUTED)
 
-    if start < pd.Timestamp(config.DEV_END):                             # shade the dev labels
+    in_dev = start < pd.Timestamp(config.DEV_END)
+    if in_dev:                                                           # shade the dev labels
         labels = json.loads((Path(args.data) / "labels/train_episodes.json").read_text())["episodes"]
         for label in labels:
             a, b = pd.Timestamp(label["start"]), pd.Timestamp(label["end"])
@@ -90,7 +91,7 @@ def main():
         ax.grid(axis="y", color="#e3e9ec", lw=0.8)
         ax.set_xlim(start, end)
     found.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz="UTC"))
-    found.set_xlabel(f"{start:%B %-d, %Y} (UTC). Shaded spans are the dev labels.")
+    found.set_xlabel(f"{start:%B} {start.day}, {start.year} (UTC)." + (" Shaded spans are the dev labels." if in_dev else ""))
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=130)
     print(f"Wrote {args.out}")

@@ -1,6 +1,6 @@
 # Straight Rows: why is the tractor drifting?
 
-This project reads one day of telemetry from three tractors, together with Space Domain Awareness feeds, and reports each episode of degraded guidance: when it started and ended, which machines it affected, what caused it, and what the operator should do. The cause is one of space weather, jamming, spoofing, an equipment fault, or multipath, and causes may overlap. Every report carries a confidence and four sentences of evidence a person can check against the data.
+This project reads 1 Hz telemetry from three tractors, together with Space Domain Awareness feeds, and reports each episode of degraded guidance on the evaluation day: when it started and ended, which machines it affected, what caused it, and what the operator should do. The cause is one of space weather, jamming, spoofing, an equipment fault, or multipath, and causes may overlap. Every report carries a confidence and four sentences of evidence a person can check against the data.
 
 It was built for the Bluestaq and NDSU Straight Rows hackathon. The original starter README is in [docs/starter_README.md](docs/starter_README.md), and the official guide is in [docs/](docs/).
 
@@ -174,7 +174,7 @@ Rejected:
 - Requiring a report before calling jamming. TRN-05 has none.
 - Using the report time as the start. Reports arrive 10 to 30 minutes late.
 
-Evidence from dev: RFI-001 arrived 14.8 minutes after TRN-03 began, 0.71 km from the farm. RFI-002 arrived 10.7 minutes after TRN-04, 1.04 km away. TRN-05 has no report. RFI-004 (confidence 0.35, issued while the tractors were parked, 4.9 km away) matches no detection.
+Evidence from dev: RFI-001 arrived 14.8 minutes after TRN-03 began, 0.71 km from the farm. RFI-002 arrived 10.7 minutes after TRN-04, 1.04 km away. TRN-05 has no report. RFI-004 (confidence 0.35, issued while the tractors were parked, 4.8 km away) matches no detection.
 
 Limitation: The reports give an ellipse without an orientation, so the test uses the semi-major length and can accept a report whose ellipse points away from the farm. An orientation or a bearing would fix that.
 
@@ -186,7 +186,7 @@ Rejected:
 
 - A fixed cross-track limit. In a storm every tractor spikes past 1 m.
 - Requiring normal signal strength, as the baseline does. It misses TRN-08, where a storm has lowered the signal on every machine.
-- The threshold crossing as the start. It comes 4 to 9 minutes after the label's start.
+- The threshold crossing as the start. It comes 4 to 11 minutes after the label's start.
 
 Evidence from dev: The starts found are 3 s, 1 s, and 170 s from the labels for TRN-06, TRN-07, and TRN-08. The drifts climb at 0.14, 0.24, and 0.12 m per minute. In TRN-03, T1 also wanders, but its unexplained loss is 16.5 dB, so it is not called spoofing.
 
@@ -212,9 +212,9 @@ Multipath is a 10 to 40 second dip of the weakest satellite, 9 dB or more below 
 Rejected:
 
 - Reporting one representative dip. Only one pass is scored, and dev gives no way to tell which.
-- Reporting dips anywhere in the field. About 550 short dips over the three days fall away from the headland.
+- Reporting dips anywhere in the field. On the two dev days about 555 short dips fall away from the headland.
 
-Evidence from dev: Each tractor dips at latitude 46.907 on about 486 passes over the three days, once every 356 seconds while working. Both dev labels are found, one to the second and one a second early. The dips elsewhere in the field are not reported.
+Evidence from dev: On the two dev days each tractor dips at latitude 46.907 about 324 times, once every 356 seconds while working. Both dev labels are found, one to the second and one a second early. The dips elsewhere in the field are not reported.
 
 Limitation: The submission carries about 486 multipath reports, close to the validator's limit of 500. Location uses the reported latitude, which is displaced during spoofing. A site survey naming the obstruction would replace the inference.
 
