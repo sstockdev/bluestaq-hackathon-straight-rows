@@ -8,13 +8,12 @@ import { PANEL, withAlpha } from "./style";
 /** H3 resolution 12: cells about 19 m across, a little wider than one planter pass. */
 const RESOLUTION = 12;
 /** How far back from the clock the layer looks, in seconds. */
-export const HEX_WINDOW_S = 1800;
+const HEX_WINDOW_S = 600;
 /** Unexplained loss above this many dB is drawn as high. */
 const HIGH_DB = 10;
 
 /**
- * The same steps as the legend in the Layers panel: the jamming color at three
- * strengths, out of 255, for low, medium, and high.
+ * The jamming color at three strengths, out of 255, for low, medium, and high.
  */
 const COLOR = CAUSES.JAMMING.rgb;
 const LOW_ALPHA = Math.round(255 * 0.3);
@@ -68,9 +67,9 @@ function hexCells(day: Day, range: [number, number], minimum: number): HexCell[]
 
 /**
  * Hexagons over the field colored by the largest unexplained signal loss seen
- * in each one during the half hour before the clock: low, medium, or high.
+ * in each one during the ten minutes before the clock: low, medium, or high.
  * Looking back a fixed time keeps the layer from filling the whole field over a
- * day. The window never reaches outside the selected range. Cells below the
+ * day. The window never reaches outside the given range. Cells below the
  * detector's jamming member threshold are not drawn.
  */
 export function hexLayers(day: Day, range: [number, number], clock: number, thresholds: Thresholds): Layer[] {
@@ -85,8 +84,8 @@ export function hexLayers(day: Day, range: [number, number], clock: number, thre
       getFillColor: (cell) => withAlpha(COLOR, alpha(cell)),
       // A dark edge keeps neighboring cells of the same strength apart.
       getLineColor: withAlpha(PANEL, 140),
-      // The whole layer is see-through, so the field and its rows show under even the strongest cells.
-      opacity: 0.7,
+      // The whole layer is faint, so the rows stay the main thing on the field.
+      opacity: 0.35,
       extruded: false,
       stroked: true,
       lineWidthUnits: "pixels",

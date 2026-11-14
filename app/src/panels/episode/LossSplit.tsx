@@ -52,9 +52,7 @@ export function LossSplit({ episode, detection }: { episode: Episode; detection:
           </div>
         );
       })}
-      <p className="mt-1.5 text-faint">
-        Median during the detection. Drop is dB below normal, sky is what S4 predicts, and unexplained is the drop minus the sky.
-      </p>
+      <p className="mt-1.5 text-faint">Medians over the detection. Sky is the drop S4 predicts.</p>
     </div>
   );
 }

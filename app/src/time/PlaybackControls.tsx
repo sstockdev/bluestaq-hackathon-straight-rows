@@ -11,19 +11,20 @@ export function PlaybackControls() {
   const hasNext = useApp((s) => s.day !== null && neighborDetection(s.day, s.clock, s.selectedId, 1) !== null);
 
   return (
-    <div className="flex items-center gap-2">
-      <StepButton label="Previous detection" disabled={!hasPrevious} onClick={() => stepDetection(-1)}>
-        <SkipBack size={16} />
+    <div className="flex items-center gap-1">
+      <StepButton label="Previous detection ( [ )" disabled={!hasPrevious} onClick={() => stepDetection(-1)}>
+        <SkipBack size={15} />
       </StepButton>
       <button
         onClick={togglePlay}
-        className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-accent font-semibold text-white transition-colors hover:bg-accent/85"
+        title="Play or pause (Space)"
+        className="flex h-8 w-24 items-center justify-center gap-1.5 rounded-lg bg-accent text-[13px] font-semibold text-white transition-colors hover:bg-accent/85"
       >
-        {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+        {playing ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
         {playing ? "Pause" : "Play"}
       </button>
-      <StepButton label="Next detection" disabled={!hasNext} onClick={() => stepDetection(1)}>
-        <SkipForward size={16} />
+      <StepButton label="Next detection ( ] )" disabled={!hasNext} onClick={() => stepDetection(1)}>
+        <SkipForward size={15} />
       </StepButton>
     </div>
   );
@@ -41,7 +42,7 @@ function StepButton({ label, disabled, onClick, children }: {
       disabled={disabled}
       aria-label={label}
       title={label}
-      className="flex h-10 w-12 items-center justify-center rounded-lg bg-panel-raised text-ink transition-colors hover:bg-line disabled:text-faint disabled:hover:bg-panel-raised"
+      className="flex h-8 w-9 items-center justify-center rounded-lg bg-panel-raised text-ink transition-colors hover:bg-line disabled:text-faint disabled:hover:bg-panel-raised"
     >
       {children}
     </button>

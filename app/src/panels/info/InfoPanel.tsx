@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Panel, PanelHeader } from "../../ui/Panel";
 
 /**
- * The frame the Sky, Why, Score, and Limits panels share: a fixed width, a header
+ * The frame the Why and Limits panels share: a fixed width, a header
  * that stays put, a body that scrolls, and an optional footer that stays in view.
  *
  * `self-stretch` is what keeps the panel above the time bar. The row it sits in

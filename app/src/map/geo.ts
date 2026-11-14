@@ -20,10 +20,3 @@ export function positionAt(day: Day, track: Track, clock: number): [number, numb
     track.lat[before] + (track.lat[after] - track.lat[before]) * share,
   ];
 }
-
-/** "46.90360° N, 97.19929° W" */
-export function formatLatLon(lat: number, lon: number): string {
-  const northSouth = lat >= 0 ? "N" : "S";
-  const eastWest = lon >= 0 ? "E" : "W";
-  return `${Math.abs(lat).toFixed(5)}° ${northSouth}, ${Math.abs(lon).toFixed(5)}° ${eastWest}`;
-}

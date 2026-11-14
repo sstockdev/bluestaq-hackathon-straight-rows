@@ -85,7 +85,7 @@ function DetectionRow({ detection, dev, selected, onSelect }: { detection: Detec
   );
 }
 
-/** One row for all of the day's multipath reports, with one tractor's example behind a toggle. */
+/** One row for all of the day's multipath reports, with the reason and one tractor's example behind a toggle. */
 function MultipathSummary({ day }: { day: Day }) {
   const [open, setOpen] = useState(false);
   const { passes, example } = day.multipath;
@@ -98,16 +98,13 @@ function MultipathSummary({ day }: { day: Day }) {
       <button onClick={() => setOpen(!open)} disabled={!sample} aria-expanded={open} className="flex w-full cursor-pointer items-center gap-2 text-left">
         <CauseBadge cause="MULTIPATH" />
         <span className="tabular text-[13px] font-medium">{total} passes reported</span>
-        <span className="tabular text-xs text-muted">{TRACTORS.map((id) => `${id} ${passes[id].length}`).join(", ")}</span>
         {sample && <ChevronDown size={16} className={clsx("ml-auto text-muted transition-transform", open && "rotate-180")} />}
       </button>
-      <p className="mt-1.5 text-xs text-muted">
-        Only one pass is scored and nothing says which, so every pass over the headland spot is reported.
-      </p>
       {open && sample && (
         <div className="mt-3 rounded-lg bg-panel-raised/60 px-3 py-2.5">
           <p className="tabular mb-2 text-xs text-muted">
-            One of {shown}'s passes, confidence {sample.confidence.toFixed(2)}
+            Every pass over the headland spot is reported, because only one is scored and nothing says which. This is
+            one of {shown}'s, at confidence {sample.confidence.toFixed(2)}.
           </p>
           <EvidenceRows sentences={sample.evidence} />
         </div>

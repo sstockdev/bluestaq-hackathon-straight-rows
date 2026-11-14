@@ -3,10 +3,10 @@ import { InfoPanel, SectionTitle } from "./info/InfoPanel";
 import { LimitCard } from "./info/LimitCard";
 import { SweepSquares } from "./info/SweepSquares";
 
-/** What can break the detector or mislead on this map: for each limit, what goes wrong, when, and what data would fix it. */
+/** What can break the detector or mislead on this map. Each limit opens to show what goes wrong, when, and what data would fix it. */
 export default function LimitsPanel() {
   return (
-    <InfoPanel title="Limits" note={`${LIMITS.length} ways the result or this map can be wrong`} width="w-[420px]">
+    <InfoPanel title="Limits" note={`${LIMITS.length} ways the result or this map can be wrong`} width="w-[380px]">
       <SweepSquares />
       {LIMIT_GROUPS.map((group) => (
         <section key={group.id} className="flex flex-col gap-2">

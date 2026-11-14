@@ -12,11 +12,9 @@ export function SweepSquares() {
         ))}
       </div>
       <p className="mt-2 text-[13px] leading-snug text-muted">
-        Each of {SWEEP.thresholds} thresholds was moved to 0.75 and 1.25 of its value and dev was rerun.{" "}
-        <span className="text-ink">
-          {SWEEP.unchanged} of the {SWEEP.moves} moves change nothing.
-        </span>{" "}
-        The other <span className="font-semibold text-amber-300">{broke}</span> break something.
+        {SWEEP.thresholds} thresholds, each moved down and up by a quarter.{" "}
+        <span className="text-ink">{SWEEP.unchanged} moves change nothing on dev.</span>{" "}
+        <span className="font-semibold text-amber-300">{broke}</span> break something.
       </p>
     </div>
   );

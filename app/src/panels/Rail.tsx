@@ -1,15 +1,11 @@
 import clsx from "clsx";
-import { ChartColumn, Clock, Layers, Lightbulb, ListChecks, Satellite, TriangleAlert, type LucideIcon } from "lucide-react";
+import { Lightbulb, ListChecks, TriangleAlert, type LucideIcon } from "lucide-react";
 import { useApp, type PanelId } from "../state/store";
 import { Panel } from "../ui/Panel";
 
 const ITEMS: { id: PanelId; label: string; icon: LucideIcon }[] = [
-  { id: "time", label: "Time", icon: Clock },
-  { id: "layers", label: "Layers", icon: Layers },
   { id: "detections", label: "Detections", icon: ListChecks },
-  { id: "sky", label: "Sky", icon: Satellite },
   { id: "why", label: "Why", icon: Lightbulb },
-  { id: "score", label: "Score", icon: ChartColumn },
   { id: "limits", label: "Limits", icon: TriangleAlert },
 ];
 
@@ -26,7 +22,7 @@ export default function Rail() {
           aria-pressed={panel === id}
           title={label}
           className={clsx(
-            "flex h-11 w-11 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] transition-colors",
+            "flex h-11 w-[54px] flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] transition-colors",
             panel === id ? "bg-accent/20 text-ink ring-1 ring-accent" : "text-muted hover:bg-panel-raised hover:text-ink",
           )}
         >

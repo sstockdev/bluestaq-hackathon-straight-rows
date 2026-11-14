@@ -5,8 +5,7 @@ import { useMemo, useState } from "react";
 import Map from "react-map-gl/maplibre";
 import { useApp } from "../state/store";
 import { cameraBounds, fieldPadding } from "./camera";
-import CameraFlights from "./CameraFlights";
-import CursorReadout from "./CursorReadout";
+import MapCredit from "./MapCredit";
 import MapLayers from "./MapLayers";
 import { mapStyle } from "./mapStyle";
 
@@ -39,7 +38,7 @@ export default function FieldMap() {
         workerUrl={workerUrl}
         onError={reportMapError}
         onLoad={() => setLoaded(true)}
-        // Read once, when the map is created. Later camera moves go through CameraFlights.
+        // Read once, when the map is created.
         initialViewState={{
           bounds: cameraBounds(index, useApp.getState().day),
           fitBoundsOptions: { padding: fieldPadding(window.innerWidth, window.innerHeight) },
@@ -50,14 +49,9 @@ export default function FieldMap() {
         touchPitch={false}
         maxZoom={19}
       >
-        {loaded && (
-          <>
-            <MapLayers center={index.field.center} />
-            <CameraFlights index={index} />
-            <CursorReadout start={index.field.center} />
-          </>
-        )}
+        {loaded && <MapLayers center={index.field.center} />}
       </Map>
+      <MapCredit />
     </div>
   );
 }

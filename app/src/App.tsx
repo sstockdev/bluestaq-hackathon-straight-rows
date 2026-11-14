@@ -3,15 +3,11 @@ import FieldMap from "./map/FieldMap";
 import DecisionsPanel from "./panels/DecisionsPanel";
 import DetectionsPanel from "./panels/DetectionsPanel";
 import EpisodePanel from "./panels/EpisodePanel";
-import LayersPanel from "./panels/LayersPanel";
 import LimitsPanel from "./panels/LimitsPanel";
 import Rail from "./panels/Rail";
-import ScorePanel from "./panels/ScorePanel";
-import SkyPanel from "./panels/SkyPanel";
 import { useApp, type PanelId } from "./state/store";
 import { useUrlSync } from "./state/useUrlSync";
 import TimeBar from "./time/TimeBar";
-import TimePanel from "./time/TimePanel";
 import { usePlayback } from "./time/usePlayback";
 import TourCaption from "./tour/TourCaption";
 import { useTour } from "./tour/useTour";
@@ -20,12 +16,8 @@ import { Panel } from "./ui/Panel";
 
 /** Which component each rail icon opens. */
 const PANELS: Record<PanelId, ComponentType> = {
-  time: TimePanel,
-  layers: LayersPanel,
   detections: DetectionsPanel,
-  sky: SkyPanel,
   why: DecisionsPanel,
-  score: ScorePanel,
   limits: LimitsPanel,
 };
 
@@ -88,9 +80,8 @@ function MapFailed() {
 
 function TitleCard() {
   return (
-    <Panel className="w-fit px-4 py-2.5">
+    <Panel className="w-fit px-4 py-2">
       <h1 className="font-condensed text-xl font-semibold leading-tight">Straight Rows</h1>
-      <p className="text-xs text-muted">Why is the tractor drifting? Casselton, North Dakota.</p>
     </Panel>
   );
 }

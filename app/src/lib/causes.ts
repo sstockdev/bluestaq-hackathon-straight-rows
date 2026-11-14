@@ -35,6 +35,6 @@ export const FIX_NAMES = ["RTK fixed", "RTK float", "DGPS", "Autonomous", "No fi
 
 /**
  * Spoofing drift is at most about 12 m on an 800 m field, too small to see.
- * The map draws it this many times larger, and the Layers panel says so.
+ * The map draws it this many times larger, and the Limits panel says so.
  */
 export const DRIFT_EXAGGERATION = 5;

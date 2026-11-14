@@ -1,4 +1,4 @@
-/** Playback and detection stepping, shared by the Time panel's buttons and the keyboard shortcuts. */
+/** Playback and detection stepping, shared by the time bar's buttons and the keyboard shortcuts. */
 import type { Day, Detection } from "../data/types";
 import { useApp } from "../state/store";
 
@@ -25,11 +25,11 @@ export function stepDetection(step: -1 | 1): void {
   if (next) select(next);
 }
 
-/** Start or pause playback. Starting at the end of the day goes back to the start of the range first. */
+/** Start or pause playback. Starting at the end of the day goes back to its start first. */
 export function togglePlay(): void {
-  const { day, clock, playing, range, setClock, setPlaying } = useApp.getState();
+  const { day, clock, playing, setClock, setPlaying } = useApp.getState();
   if (!day) return;
   const end = day.t0 + day.n * day.step - 1;
-  if (!playing && clock >= end) setClock(range[0]);
+  if (!playing && clock >= end) setClock(day.t0);
   setPlaying(!playing);
 }

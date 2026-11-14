@@ -8,11 +8,8 @@ export function SpeedPicker() {
   const setSpeed = useApp((s) => s.setSpeed);
 
   return (
-    <div>
-      <div className="mb-1.5 flex items-baseline justify-between text-xs">
-        <span className="text-muted">Speed</span>
-        <span className="tabular text-ink">{speedName(speed).long}</span>
-      </div>
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted">Speed</span>
       <div role="radiogroup" aria-label="Playback speed" className="flex gap-1 rounded-lg bg-panel-raised p-1">
         {SPEEDS.map((option) => (
           <button
@@ -20,9 +17,10 @@ export function SpeedPicker() {
             role="radio"
             aria-checked={option === speed}
             aria-label={speedName(option).long}
+            title={speedName(option).long}
             onClick={() => setSpeed(option)}
             className={clsx(
-              "flex-1 whitespace-nowrap rounded-md px-1 py-1 text-xs transition-colors",
+              "whitespace-nowrap rounded-md px-2 py-1 text-xs transition-colors",
               option === speed ? "bg-accent font-semibold text-white" : "text-muted hover:text-ink",
             )}
           >

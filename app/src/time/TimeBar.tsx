@@ -1,63 +1,60 @@
 import { useMemo } from "react";
 import { TRACTORS } from "../lib/causes";
-import { useApp } from "../state/store";
+import { dayRange, useApp } from "../state/store";
 import { Panel } from "../ui/Panel";
 import { AxisLane } from "./AxisLane";
-import { HatchDefs } from "./BlockLane";
 import { blocksFor, dayBlocks } from "./blocks";
 import { BlockTooltip } from "./BlockTooltip";
-import { LaneGroup } from "./LaneGroup";
+import { DayPicker } from "./DayPicker";
+import { PlaybackControls } from "./PlaybackControls";
 import { Playhead } from "./Playhead";
 import { makeScale } from "./scale";
 import { SkyLane } from "./SkyLane";
+import { SpeedPicker } from "./SpeedPicker";
 import { TractorLane } from "./TractorLane";
 import { useScrub } from "./useScrub";
 import { useTimeKeys } from "./useTimeKeys";
 import { useWidth } from "./useWidth";
-import { WorkingLane } from "./WorkingLane";
 
 /** Sizes in pixels. The gutter holds the lane names; the right margin holds the S4 threshold's value. */
-const GUTTER = 62;
+const GUTTER = 36;
 const RIGHT_MARGIN = 30;
 const AXIS = 20;
-const SKY = 56;
-const WORKING = 6;
+const SKY = 34;
 const TRACTOR = 20;
-const THIN_ROW = 8;
 const GAP = 5;
 
 /**
- * The timeline along the bottom of the screen. It spans the selected range, so
- * narrowing the range zooms it. Top to bottom: hours, the sky, when the tractors
- * work, one lane per tractor, then the labels and the baseline when those layers
- * are on. Click or drag to move the clock; click a detection to select it.
+ * The bar along the bottom of the screen. On top are the controls: the day,
+ * play and pause, and the playback speed. Under them is the day's timeline:
+ * hours, the sky's S4, and one lane per tractor with its detections. Click or
+ * drag the timeline to move the clock; click a detection to select it.
  */
 export default function TimeBar() {
   const day = useApp((s) => s.day);
   const index = useApp((s) => s.index);
-  const range = useApp((s) => s.range);
   const selectedId = useApp((s) => s.selectedId);
-  const layers = useApp((s) => s.layers);
   const [box, width] = useWidth<HTMLDivElement>();
   // The bar is always on screen, so the time shortcuts live here and work with any panel open.
   useTimeKeys();
 
   const blocks = useMemo(() => (day ? dayBlocks(day) : null), [day]);
-  const scale = useMemo(() => makeScale(range, GUTTER, width - RIGHT_MARGIN), [range, width]);
+  const scale = useMemo(() => makeScale(day ? dayRange(day) : [0, 1], GUTTER, width - RIGHT_MARGIN), [day, width]);
   const { hover, handlers } = useScrub(scale, blocks?.byKey ?? new Map());
   if (!day || !index || !blocks) return null;
 
-  const showLabels = layers.labels && blocks.labels.length > 0;
-  const showBaseline = layers.baseline && blocks.baseline.length > 0;
   const skyY = AXIS;
-  const workingY = skyY + SKY + GAP;
-  const tractorY = workingY + WORKING + GAP;
-  const labelsY = tractorY + TRACTORS.length * TRACTOR + GAP;
-  const baselineY = labelsY + (showLabels ? TRACTORS.length * THIN_ROW + GAP : 0);
-  const height = baselineY + (showBaseline ? TRACTORS.length * THIN_ROW + GAP : 0) - GAP;
+  const tractorY = skyY + SKY + GAP;
+  const height = tractorY + TRACTORS.length * TRACTOR - 3;
 
   return (
     <Panel className="w-full px-3 pb-3 pt-2.5">
+      <div className="mb-2 flex items-center gap-3">
+        <DayPicker />
+        <PlaybackControls />
+        <div className="flex-1" />
+        <SpeedPicker />
+      </div>
       <div ref={box} className="relative">
         {width > 0 && (
           <svg
@@ -68,10 +65,8 @@ export default function TimeBar() {
             className="block cursor-crosshair touch-none select-none"
             {...handlers}
           >
-            <HatchDefs />
             <AxisLane height={AXIS} bottom={height} scale={scale} midnight={day.t0} />
-            <SkyLane y={skyY} height={SKY} sky={day.sky} threshold={index.thresholds.sagMin} scale={scale} />
-            <WorkingLane y={workingY} height={WORKING} working={day.working} scale={scale} />
+            <SkyLane y={skyY} height={SKY} s4={day.sky.s4} threshold={index.thresholds.sagMin} scale={scale} />
             {TRACTORS.map((tractor, i) => (
               <TractorLane
                 key={tractor}
@@ -79,13 +74,10 @@ export default function TimeBar() {
                 y={tractorY + i * TRACTOR}
                 height={TRACTOR - 3}
                 blocks={blocksFor(blocks.detections, tractor)}
-                passes={blocks.passes[tractor]}
                 scale={scale}
                 selectedId={selectedId}
               />
             ))}
-            {showLabels && <LaneGroup title="Labels" y={labelsY} rowHeight={THIN_ROW} blocks={blocks.labels} scale={scale} />}
-            {showBaseline && <LaneGroup title="Baseline" y={baselineY} rowHeight={THIN_ROW} blocks={blocks.baseline} scale={scale} />}
             <Playhead scale={scale} top={2} bottom={height} midnight={day.t0} />
           </svg>
         )}

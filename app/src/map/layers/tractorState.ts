@@ -15,7 +15,7 @@ export interface TractorState {
   cause: number;
 }
 
-/** The state of all three tractors at a moment. The tractor, spoofing, and multipath layers share it. */
+/** The state of all three tractors at a moment. The tractor and spoofing layers share it. */
 export function tractorStates(day: Day, clock: number): TractorState[] {
   const sample = sampleIndex(day, clock);
   return TRACTORS.map((id) => {

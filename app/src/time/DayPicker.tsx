@@ -8,21 +8,19 @@ export function DayPicker() {
   const setDay = useApp((s) => s.setDay);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1 rounded-lg bg-panel-raised p-1">
       {days.map((day) => (
         <button
           key={day.date}
           onClick={() => void setDay(day.date)}
           aria-pressed={day.date === current}
           className={clsx(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[13px] font-medium transition-colors",
-            day.date === current
-              ? "bg-accent/20 text-ink ring-1 ring-accent"
-              : "bg-panel-raised text-muted hover:text-ink",
+            "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors",
+            day.date === current ? "bg-accent/25 text-ink ring-1 ring-accent" : "text-muted hover:text-ink",
           )}
         >
           {day.label}
-          <span className="rounded bg-line px-1 py-px text-[10px] font-medium leading-tight text-muted">{day.kind}</span>
+          <span className="text-[11px] font-normal text-faint">{day.kind}</span>
         </button>
       ))}
     </div>

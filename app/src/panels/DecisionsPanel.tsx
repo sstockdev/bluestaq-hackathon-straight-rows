@@ -2,20 +2,24 @@ import { useMemo, useState } from "react";
 import { useApp } from "../state/store";
 import { DecisionCard } from "./info/DecisionCard";
 import { InfoPanel } from "./info/InfoPanel";
+import { ScoreLine } from "./info/ScoreLine";
 
-/** The design decisions behind the detector, the ones shown in the demo first. One card is open at a time. */
+/**
+ * The dev score, then the design decisions behind the detector, the ones shown
+ * in the demo first. A decision opens when clicked, one at a time.
+ */
 export default function DecisionsPanel() {
   const decisions = useApp((s) => s.index?.decisions);
   const ordered = useMemo(
     () => [...(decisions ?? [])].sort((a, b) => Number(b.in_demo) - Number(a.in_demo) || a.id - b.id),
     [decisions],
   );
-  const [openId, setOpenId] = useState<number | null>(ordered[0]?.id ?? null);
+  const [openId, setOpenId] = useState<number | null>(null);
   if (ordered.length === 0) return null;
 
-  const inDemo = ordered.filter((decision) => decision.in_demo).length;
   return (
-    <InfoPanel title="Why" note={`${ordered.length} design decisions, the ${inDemo} in the demo first`} width="w-[420px]">
+    <InfoPanel title="Why" note={`${ordered.length} design decisions`} width="w-[380px]">
+      <ScoreLine />
       <ol className="flex flex-col gap-2">
         {ordered.map((decision) => (
           <DecisionCard

@@ -3,15 +3,7 @@ import { Dot } from "../ui/CauseBadge";
 import type { TimelineBlock } from "./blocks";
 import { stretchLabel } from "./format";
 
-/** What kind of block this is, in words. */
-function sourceName(block: TimelineBlock): string {
-  if (block.source === "detection") return "Detection";
-  if (block.source === "multipath") return "Multipath pass";
-  if (block.source === "label") return block.labelId ? `Label ${block.labelId}` : "Label";
-  return block.wrong ? "Baseline, matches no label" : "Baseline";
-}
-
-/** The small card shown above the time bar while the pointer is over a block. */
+/** The small card shown above the time bar while the pointer is over a detection. */
 export function BlockTooltip({ block, x, width, midnight }: {
   block: TimelineBlock;
   /** The pointer's x position within the bar. */
@@ -20,7 +12,8 @@ export function BlockTooltip({ block, x, width, midnight }: {
   width: number;
   midnight: number;
 }) {
-  const cause = CAUSES[block.cls];
+  const { cls, tractors, start, end, confidence } = block.detection;
+  const cause = CAUSES[cls];
   const left = Math.min(width - 110, Math.max(110, x));
   return (
     <div
@@ -32,10 +25,9 @@ export function BlockTooltip({ block, x, width, midnight }: {
         <Dot color={cause.color} />
         {cause.name}
       </p>
-      <p className="text-muted">{sourceName(block)}</p>
-      <p className="tabular mt-1">{block.tractors.join(", ")}</p>
-      <p className="tabular">{stretchLabel(block.start, block.end, midnight)}</p>
-      {block.detection && <p className="tabular">Confidence {block.detection.confidence.toFixed(2)}</p>}
+      <p className="tabular mt-1">{tractors.join(", ")}</p>
+      <p className="tabular">{stretchLabel(start, end, midnight)}</p>
+      <p className="tabular">Confidence {confidence.toFixed(2)}</p>
     </div>
   );
 }

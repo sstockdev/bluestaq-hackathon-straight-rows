@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useApp, useSelected } from "../state/store";
-import { CauseBadge } from "../ui/CauseBadge";
+import { useApp } from "../state/store";
 import { Panel } from "../ui/Panel";
 import { endTour, goToStop } from "./control";
 import { SCENES } from "./scenes";
@@ -11,12 +10,11 @@ const BUTTON = "flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-m
 /** The card for the current tour stop, at the bottom center above the time bar. Renders nothing when the tour is off. */
 export default function TourCaption() {
   const step = useApp((s) => s.tourStep);
-  const selected = useSelected();
   const scene = step === null ? undefined : SCENES[step];
   if (step === null || !scene) return null;
 
   return (
-    <div className="pointer-events-none absolute bottom-[214px] left-1/2 z-20 w-[540px] max-w-[calc(100%-24px)] -translate-x-1/2">
+    <div className="pointer-events-none absolute bottom-[222px] left-1/2 z-20 w-[540px] max-w-[calc(100%-24px)] -translate-x-1/2">
       <Panel className="px-4 py-3">
         <div className="flex items-center gap-3" role="status" aria-live="polite">
           <span className="tabular text-xs text-muted">
@@ -39,12 +37,6 @@ export default function TourCaption() {
         )}
 
         <div className="mt-3 flex items-center gap-2">
-          {scene.showsDetection && selected && (
-            <span className="tabular flex items-center gap-2 text-[13px] text-muted">
-              <CauseBadge cause={selected.cls} />
-              confidence <span className="font-semibold text-ink">{selected.confidence.toFixed(2)}</span>
-            </span>
-          )}
           <button
             onClick={() => goToStop(step - 1)}
             disabled={step === 0}
