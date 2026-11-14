@@ -65,7 +65,7 @@ The two dev days hold 12 labeled episodes. I plotted each one, recorded which me
 
 The labels also showed three things that shaped the rules: an episode starts when the tractors start working, even if the signal was already degraded; causes overlap, including two on the same tractor; and jamming inside a storm looks the same on every tractor, so equal loss cannot be the test for space weather.
 
-No threshold was tuned against the evaluation window. [NOTES.md](NOTES.md) lists every threshold with its source.
+No threshold was tuned against the evaluation window. Each threshold in `straightrows/config.py` has a comment naming the measurement it came from.
 
 ## Results on the dev episodes
 
@@ -95,7 +95,7 @@ Failure modes that matter in use:
 - The spoofing start time assumes a steady drift. A spoofer that jumps the position would get a late start.
 - Multipath is located by reported latitude, which is displaced during spoofing.
 
-[NOTES.md](NOTES.md) has the full sweep table, the baseline's misses and false positives with their causes, and the complete list of limits.
+`python scripts/sensitivity.py` prints the full sweep table.
 
 ## Design decisions
 
@@ -275,7 +275,6 @@ Limitation: A full dev score says nothing about evaluation day. The sweep and th
 | `straightrows/` | The detector: `config.py` (thresholds), `data.py`, `features.py`, `intervals.py`, `detectors.py`, `evidence.py`, `pipeline.py` |
 | `make_submission.py` | Regenerates `dev_pred.json` and `submission.json` |
 | `decisions.json` | The design decisions, rendered into this README by `scripts/render_decisions.py --write` |
-| `NOTES.md` | Threshold sources, dev results, the sensitivity sweep, known limits |
 | `scripts/` | Data download, dev scoring, the organizers' scorer, the sensitivity sweep, plotting |
 | `figures/` | Figures used in this README |
 | `presentation/` | A demo page that draws the solution's outputs. It is a viewer and not part of the detector |
